@@ -1,38 +1,22 @@
 """
-T [C]
-lam [um]
+sellmeier_eq(lam, temp, pol):   Sellmeier equation for given crystal
+per:                            Polling period (um)
+l:                              pump, signal, and idler wavelengths
+t:                              High/low oven temperatures
+pol:                            "o"-ordinary, "e"-extraordinary
+
+returns:
 """
 
+def qpm_condition(sellmeier_eq, per, l_p, l_s, l_i, t_high, t_low, pol):
+    # n[pump, signal, idler][lowT, highT]
+    n = np.array([[sellmeier_eq(l_p, t_lo, pol), sellmeier_eq(l_p, t_hi, pol)],
+                  [sellmeier_eq(l_s, t_lo, pol), sellmeier_eq(l_s, t_hi, pol)],
+                  [sellmeier_eq(l_i, t_lo, pol), sellmeier_eq(l_i, t_hi, pol)]])
+    lam = np.array([l_p, l_s, l_i])
+    k = 2 * np.pi * n / lam
+    delta_k = k[0] - k[1] - k[2]
 
-def sellmeier_MgOPPLN(lam, T, axis='o'):
-    a = None
-    b = None
-    if axis == 'o':
-        a = (5.653, .1185, .2091, 89.61, 10.85, 1.97e-2)
-        b = (7.941e-7, 3.134e-8, -4.641e-9, -2.188e-6)
-    elif axis == 'e':
-        a = (5.756, .0983, .202, 189.32, 12.52, 1.32e-2)
-        b = (2.86e-6, 4.7e-8, 6.113e-8, 1.516e-4)
-    f = (T - 24.5) * (T + 570.82)
-    return (a[0] + b[0] * f + (a[1] + b[1] * f) / (lam ** 2 - (a[2] + b[2] * f) ** 2) + (a[3] + b[3] * f) / (
-            lam ** 2 - a[4] ** 2) - a[5] * lam ** 2) ** .5
-
-
-"""
-T [C]
-lam [um]
-returns: [um/fs]
-"""
-
-
-def groupvel_MgOPPLN(lam, T, axis='o'):
-    n = sellmeier_MgOPPLN(lam, T, axis=axis)
-    x = Symbol('x')
-    nprime = sellmeier_MgOPPLN(x, T, axis=axis)
-    nprime = nprime.diff(x)
-    nprime = lambdify(x, nprime, 'numpy')
-    nprime = nprime(lam)
-    return c_um_per_fs / n * (1 + lam / n * nprime)
 
 
 if __name__ == '__main__':
@@ -41,27 +25,23 @@ if __name__ == '__main__':
     from pathlib import Path
     import seaborn as sns
     import matplotlib.pyplot as plt
-    from scipy.interpolate import interp1d
-    from sympy import diff, lambdify, Symbol
+    from quasi_phase_match import sellmeier_MgOPPLN
 
     datPath = Path('Data/QPM.DAT').resolve()
     colNames = ['lam1', 'lam2', 'period', 'tempbw', 'grpvel1', 'grpvel2', 'grpvelblue', 'gdd1', 'gdd2', 'gddblue']
     df = pd.read_table(datPath,
                        names=colNames,
                        sep='\s+')
-    # sns.lineplot(data=df, x='period', y='lam1')
-    c_mm_per_ps = 2.9979e-1  # mm/ps
-    c_um_per_fs = 2.9979e-1  # um/fs
-    # yData = df['period']
-    # xData = df['lam2']
-    # f=interp1d(xData,yData,kind='
-    # cubic')
-    # print(f(2000),f(1330))
+    sns.lineplot(data=df, x='period', y='lam1')
 
-    # plt.show()
-    #
-    # sns.lineplot(data=df, x='lam2', y='grpvel2')
-    # plt.show()
+    plt.show()
+    l_hi =
+    l_lo =
+
+    t_hi = 150 # C
+    t_lo = 50 # C
+
+    sns.scatterplot(x=, y=)
 
     l = np.linspace(1.030, 2.000, 250)
     temp = 80
