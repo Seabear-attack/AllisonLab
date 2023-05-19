@@ -62,8 +62,8 @@ if __name__ == '__main__':
     # sns.lineplot(data=df, x='lam2', y='grpvel2')
     # plt.show()
 
-    l = np.linspace(1.030, 2.000, 250)
-    temp = 80
+    l = np.linspace(1.3, 2.000, 250)
+    temp = 25
     n_sig_o = sellmeier_MgOPPLN(l, temp, 'o')
     n_pump_o = sellmeier_MgOPPLN(1.035, temp, 'o')
     n_sig_e = sellmeier_MgOPPLN(l, temp, 'e')
