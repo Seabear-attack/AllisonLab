@@ -1,5 +1,4 @@
-# Soliton Plotting with 2.2ps
-# Attempting to write a program that plots everything in a folder within a given range
+# Plots every spectrum in a user-selected folder. Works for the Anritsu spectrometer.
 import os
 import easygui as eg
 import matplotlib.pyplot as plt
@@ -7,15 +6,16 @@ import numpy as np
 import pandas as pd
 
 
-def OpenCSVFiles():
-    directory = eg.diropenbox('Open me', 'this one', 'F://Google Drive//')
+def OpenCSVFiles(dirName):
+    directory = eg.diropenbox('Open me', 'this one', dirName)
     filenames = os.listdir(directory)
     print('changing the root directory to:\t' + directory)
     print('filenames are:\t', filenames)
     return directory, filenames
 
+
 if __name__ == "__main__":
-    directory, filenames = OpenCSVFiles()
+    directory, filenames = OpenCSVFiles(r'C:\Users\wahlm\Documents\School\Research\Allison')
 
     # loop through all files in the directory
 
@@ -39,7 +39,8 @@ if __name__ == "__main__":
 
     for i in range(len(dfs)):
         df_new = dfs[i].iloc[:, :2]  # select first two column
-        df_new_numeric = df_new.applymap(lambda x: pd.to_numeric(x, errors='coerce')).dropna()  # select only numerical rows
+        df_new_numeric = df_new.applymap(
+            lambda x: pd.to_numeric(x, errors='coerce')).dropna()  # select only numerical rows
         # df_new_numeric = df_new_numeric[df_new_numeric.iloc[:,0]>1600]
         WaveLength = np.array(df_new_numeric.iloc[:, 0].values, dtype='float64')
         SpectrumIntensity = np.array(df_new_numeric.iloc[:, 1].values, dtype='float64')
@@ -55,4 +56,3 @@ if __name__ == "__main__":
     # plt.ylim(-50,1)
     # Display the plot
     plt.show()
-
