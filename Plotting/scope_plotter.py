@@ -1,4 +1,4 @@
-# Plots every scope lineout in user-selected folder.
+# Plots every scope lineout in user-selected folder. Works for Tektronix scopes
 import os
 import easygui as eg
 import matplotlib.pyplot as plt
