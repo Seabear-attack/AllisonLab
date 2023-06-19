@@ -35,7 +35,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(20, 8))
 
     # Label1 = ['All 1.2A','3*1.2A+800mA','3*1.2A+700mA','3*1.2A+650mA','3*1.2A+500mA']
-    Label1 = ['All 1.2A', '3*1.2A+1A', '3*1.2A+0.9A', '3*1.2A+0.8A', '3*1.2A+0.7A', '3*1.2A+0.54A', '???', 'NA2']
+    Label1 = ['Modulator Output 2 Polarization', 'Modulator Output 1 Polarization']
 
     for i in range(len(dfs)):
         df_new = dfs[i].iloc[:, 2:]  # select the data columns
@@ -50,8 +50,7 @@ if __name__ == "__main__":
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Voltage [V]')
     ax.legend()
-    ax.set_title(
-        'Spectrum of 44.5cm of pm1550 +4cm of 2.2ps/nm/km HNLF for different EDFA powers - 28.5cm pm1550 + 4cm HNLF splice')
+    ax.set_title('Photodiode output post-EDFA w/ freespace PBS at optimal angle')
 
     # plt.ylim(-50,1)
     # Display the plot
