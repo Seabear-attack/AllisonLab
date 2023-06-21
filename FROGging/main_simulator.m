@@ -92,4 +92,4 @@ title('Used trace')
 subplot(3, 2, 6); imagesc(time*1e15, fftshift(F)*1e-15, sqrt(abs(Irec)))
 xlabel('Time [fsec]','FontSize',16); ylabel('Freq.[THz]','FontSize',16);
 title('Reconstructed trace')
-suptitle( sprintf('delta = %.3f', delta) )
+sgtitle( sprintf('delta = %.3f', delta) )

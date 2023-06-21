@@ -35,8 +35,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(20, 8))
 
     # Label1 = ['All 1.2A','3*1.2A+800mA','3*1.2A+700mA','3*1.2A+650mA','3*1.2A+500mA']
-    Label1 = ['1x 1.2A', '2x 1.2A', '3x 1.2A', '4x 1.2A', '4x 1.2A', '4x 1.2A, 50% duty', '4x 1.2A, 2 on 2 off', '4x '
-                '1.2A, 10 on 10 off', '4x 1.2A', '4x 1.2A, 15 on 5 off']
+    Label1 = ['4x 1A, no modulator', '4x 1.2A, no modulator', '4x 1A, output 1', '4x 1A, output 2']
 
     for i in range(len(dfs)):
         df_new = dfs[i].iloc[:, :2]  # select first two column
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     ax.set_ylabel('power')
     ax.legend()
     ax.set_title(
-        'Spectrum of 1.7m of PM1550 with varying pump powers and pulse configurations')
+        'Spectrum of +30cm of PM1550 with and without modulator')
 
     # plt.ylim(-50,1)
     # Display the plot
