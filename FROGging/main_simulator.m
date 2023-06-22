@@ -12,9 +12,9 @@ SNR = 20;
 load('pulse_set.mat');
 alg = 2; % use 1 for pulse reconstruction without any prior information about the pulse
                % use 2 for pulse reconstruction with known power spectrum
-LPF_flag = 0; % 1 for applying Low Pass Filter. 0 without LPF.
+LPF_flag = 1; % 1 for applying Low Pass Filter. 0 without LPF.
 %% Make SHG FROG trace
-    pulse = pulse_set(2, :);% chooses pulse #2. You can choose another pulse from the bank or use your own pulse here
+    pulse = pulse_set(99, :);% chooses pulse #2. You can choose another pulse from the bank or use your own pulse here
     ind = 1:N;
     Ns = numel(ind); 
     D = time(ind);

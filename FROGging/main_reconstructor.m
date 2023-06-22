@@ -29,9 +29,26 @@ dt = time_fs(2)-time_fs(1);
 I_exp_wavelength = I_exp_truncated(2:end,:);
 I_exp_freq = I_exp_wavelength .* (wavelength_nm.^2);
 F = fftshift(flip(c_nm_per_fs./wavelength_nm));
+if numel(F)>numel(D)
+    Nf = numel(F);
+    Nd = numel(D);
+    N = Nf;
+    D = (-N/2:N/2-1)*dt/N;
+    Nempty = Nf-Nd;
+    
+    I_exp_freq = padarray(I_exp_freq,[0, Nempty/2],0,'both');
+    if mod(Nempty, 2) == 1
+        I_exp_freq = padarray(I_exp_freq,[0, 1],0,'pre');
+    end
+
+% elseif numel(F)<numel(D)
+%     Nd = numel(D)
+%     Nf
+end
+    
+
 % F = (-N/2:N/2-1);
 % F =  fftshift( F/dt/N );
-N = numel(F);
 time_pulse_reconstruction = (-N/2:N/2-1)*dt/N;
 Fsupp = true(size(F))';
 
