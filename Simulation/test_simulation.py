@@ -4,28 +4,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pynlo
 
-FWHM    = 0.150  # pulse duration (ps)
-pulseWL = 1550   # pulse central wavelength (nm)
-a_t = np.array([])
+FWHM    = 0.040  # pulse duration (ps)
+pulseWL = 1565   # pulse central wavelength (nm)
+# a_t = np.array([])
 
-EPP     = 5e-9 # Energy per pulse (J)
+EPP     = (5e-9)/3 # Energy per pulse (J) + fudge factor
 GDD     = 0.0    # Group delay dispersion (ps^2)
 TOD     = 0.0    # Third order dispersion (ps^3)
 
-Window  = 10.0   # simulation window (ps)
+Window  = 5.0   # simulation window (ps)
 Steps   = 100     # simulation steps
 Points  = 2**13  # simulation points
 
-beta2   = -120     # (ps^2/km)
-beta3   = 0.00     # (ps^3/km)
-beta4   = 0.005    # (ps^4/km)
+beta2   = 3.35     # (ps^2/km)
+beta3   = 0.00    # (ps^3/km)
+beta4   = 0.00    # (ps^4/km)
 
-Length  = 5    # length in mm
+Length  = 50    # length in mm
 
 Alpha   = 0.0     # attentuation coefficient (dB/cm)
 Gamma   = 10    # Gamma (1/(W km)
 
-fibWL   = pulseWL # Center WL of fiber (nm)
+fibWL   = 1550 # Center WL of fiber (nm)
 
 Raman   = True    # Enable Raman effect?
 Steep   = True    # Enable self steepening?
@@ -44,11 +44,13 @@ ax3 = plt.subplot2grid((3,2), (1, 1), rowspan=2, sharex=ax1)
 ######## This is where the PyNLO magic happens! ############################
 
 # create the pulse!
+# pulse = pynlo.light.DerivedPulses.SechPulse(1, FWHM/1.76, pulseWL, time_window_ps=Window,
+#                   GDD=GDD, TOD=TOD, NPTS=Points, frep_MHz=100, power_is_avg=False)
 pulse = pynlo.light.DerivedPulses.SechPulse(1, FWHM/1.76, pulseWL, time_window_ps=Window,
-                  GDD=GDD, TOD=TOD, NPTS=Points, frep_MHz=100, power_is_avg=False)
+                  GDD=GDD, TOD=TOD, NPTS=Points, frep_MHz=61, power_is_avg=False)
 
-pulse = pynlo.light.PulseBase.Pulse()
-pulse.set_AT(a_t)
+# pulse = pynlo.light.PulseBase.Pulse()
+# pulse.set_AT(a_t)
 
 pulse.set_epp(EPP) # set the pulse energy
 
