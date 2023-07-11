@@ -16,7 +16,8 @@ Window  = 5.0   # simulation window (ps)
 Steps   = 100     # simulation steps
 Points  = 2**13  # simulation points
 
-beta2   = 3.35     # (ps^2/km)
+# beta2   = 3.35     # (ps^2/km)
+beta2   = -7.5
 beta3   = 0.00    # (ps^3/km)
 beta4   = 0.00    # (ps^4/km)
 

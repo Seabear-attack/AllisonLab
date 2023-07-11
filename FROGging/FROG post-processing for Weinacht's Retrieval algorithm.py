@@ -84,7 +84,7 @@ def ShiftFrogby5(OriginalFrog):
 
 
 # zoom in on wavelength
-lowWv = 730
+lowWv = 740
 highWv = 830
 
 # zoom in on time
