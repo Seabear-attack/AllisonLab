@@ -4,29 +4,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pynlo
 
-FWHM    = 0.040  # pulse duration (ps)
+c_nm_per_ps = 300000
+
+FWHM    = 0.050  # pulse duration (ps)
 pulseWL = 1565   # pulse central wavelength (nm)
 # a_t = np.array([])
 
-EPP     = (5e-9)/3 # Energy per pulse (J) + fudge factor
+EPP     = (4e-9)/3 # Energy per pulse (J) + fudge factor
 GDD     = 0.0    # Group delay dispersion (ps^2)
 TOD     = 0.0    # Third order dispersion (ps^3)
 
-Window  = 5.0   # simulation window (ps)
+Window  = 2.0   # simulation window (ps)
 Steps   = 100     # simulation steps
 Points  = 2**13  # simulation points
 
-# beta2   = 3.35     # (ps^2/km)
-beta2   = -7.5
-beta3   = 0.00    # (ps^3/km)
-beta4   = 0.00    # (ps^4/km)
-
 Length  = 50    # length in mm
 
-Alpha   = 0.0     # attentuation coefficient (dB/cm)
-Gamma   = 10    # Gamma (1/(W km)
+Alpha   = 0.8 * 10 ** (-5)     # attenuation coefficient (dB/cm)
+Gamma   = 10.5    # Gamma (1/(W km)
 
 fibWL   = 1550 # Center WL of fiber (nm)
+
+# beta2   = 3.35     # (ps^2/km)
+
+D = -2.6    # (ps/(nm*km))
+D_slope = .026   # (ps/(nm^2*km))
+
+if D == 0:
+    beta2   = -7.5    # (ps^2/km)
+    beta3 = 0.00  # (ps^3/km)
+else:
+    beta2 = -D * fibWL ** 2 / (2 * np.pi * c_nm_per_ps)
+    beta3 = fibWL ** 3 / (2 * np.pi ** 2 * c_nm_per_ps ** 2) * (fibWL/2 * D_slope + D)
+
+beta4   = 0.00    # (ps^4/km)
+
+
 
 Raman   = True    # Enable Raman effect?
 Steep   = True    # Enable self steepening?
@@ -106,7 +119,7 @@ ax2.set_ylabel('Propagation distance (mm)')
 
 ax2.set_xlim(0,400)
 
-ax0.set_ylim(-80,0)
+ax0.set_ylim(-30,20)
 ax1.set_ylim(-40,40)
 
 plt.show()
