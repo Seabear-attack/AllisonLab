@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # Create a figure and axis object using matplotlib
     fig, ax = plt.subplots(figsize=(20, 8))
 
-    Label1 = ['4x 1.2A', '4x 1.25A', '4x 1.15A', '4x 1.175A', '4x 1.125A', '4x 1.1A', '4x 1.3A', 'Background']
+    Label1 = ['4x 1.15A', '4x 1.2A', '4x 1.25A', '4x 1.175A', '4x 1.2A', '4x 1.225A', '4x 1.25A']
     spectra = []
     for i in range(len(dfs)):
         df_new = dfs[i].iloc[:, :2]  # select first two column
@@ -62,8 +62,7 @@ if __name__ == "__main__":
     ax.set_xlabel('wavelength (nm)')
     ax.set_ylabel('power')
     ax.legend()
-    ax.set_title(
-        'Spectrum of +30cm of PM1550 with and without modulator')
+    # ax.set_title()
 
 
     # Display the plot
