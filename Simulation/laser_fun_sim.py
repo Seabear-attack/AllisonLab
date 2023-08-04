@@ -12,15 +12,16 @@ pulse_at_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Alli
 pulse_al_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\1565 +- 3 nm BPF\7-9-23  Pulse duration optimization (1565 BPF)\with_modulator\all_pulses_1.2A_all_+51cm_PM1550_short_EDFA_port\Speck.dat")
 pulse_time_ps = .001 * pulse_at_file_in[:, 0]
 pulse_amp = pulse_at_file_in[:, 3] + 1j * pulse_at_file_in[:, 4]
+pulse_wavelength_nm = pulse_al_file_in[:, 0]
 pulse_avg_power_mW = 300
 pulse_rep_rate_MHz = 61
 EPP = pulse_avg_power_mW / pulse_rep_rate_MHz * 10 ** (-9)
-pulseWL = 1565  # pulse central wavelength (nm)
+pulseWL = (max(pulse_wavelength_nm) + min(pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
 
 # Fiber 1:
 disp1 = -2.6  # fiber dispersion in ps/(nm km)
 slope1 = .026  # dispersion slope in ps/(nm^2 km)
-length1 = .1  # length of first fiber in meters
+length1 = 1  # length of first fiber in meters
 alpha1 = 0.8 * 10 ** (-5)  # loss (dB/cm)
 gamma1 = 10.5  # nonlinearity (1/(W km))
 
@@ -41,6 +42,8 @@ gamma1 = 10.5  # nonlinearity (1/(W km))
 Window = max(pulse_time_ps) - min(pulse_time_ps)  # simulation window (ps)
 Steps = 100  # simulation steps
 Points = len(pulse_amp)  # simulation points
+pad_factor = 2
+pulse_amp = np.pad(pulse_amp, pad_width=, mode=constant, constant_values=0)
 rtol = 1e-4  # relative error for NLSE integrator
 atol = 1e-4  # absolute error
 
@@ -65,18 +68,18 @@ beta4 = 0.00  # (ps^4/km)
 # beta42 = 0.00  # (ps^4/km)
 
 # create the pulse
-pulse_in = lf.Pulse(pulse_type='sech', center_wavelength_nm=pulseWL,
+pulse_in = lf.Pulse(center_wavelength_nm=pulseWL,
                     time_window_ps=Window, npts=Points,
                     power_is_avg=False, epp=EPP)
 pulse_in.at = pulse_amp
 # create the fiber
 fiber1 = lf.Fiber(length1, center_wl_nm=pulseWL, dispersion_format='GVD',
-                  dispersion=(beta2 * 1e-3, beta3 * 1e-3, beta4 * 1e-3),
+                  dispersion=[beta2 * 1e-3, beta3 * 1e-3, beta4 * 1e-3],
                   gamma_W_m=gamma1 * 1e-3, loss_dB_per_m=alpha1 * 100)
 
 print('Propagation in fiber1...')
 results1 = lf.NLSE(pulse_in, fiber1, raman=Raman, shock=Steep, nsaves=Steps,
-                   rtol=rtol, atol=atol, print_status=False)
+                   rtol=rtol, atol=atol, print_status=True)
 
 # second fiber
 # fraction = 10 ** (-loss_between_sections_dB * 0.1)

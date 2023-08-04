@@ -8,7 +8,7 @@ def dB(num):
     return 10 * np.log10(np.abs(num) ** 2)
 
 # Fundamental constants
-c_nm_per_ps = 300000
+c_nm_per_ps = 299792.458
 
 # Pulse characteristics
 pulse_at_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\1565 +- 3 nm BPF\7-9-23  Pulse duration optimization (1565 BPF)\with_modulator\all_pulses_1.2A_all_+51cm_PM1550_short_EDFA_port\Ek.dat")
@@ -18,7 +18,7 @@ pulse_amp = pulse_at_file_in[:, 3] + 1j * pulse_at_file_in[:, 4]
 pulse_wavelength_nm = pulse_al_file_in[:, 0]
 pulse_freq_THz = np.linspace(max(pulse_wavelength_nm)/c_nm_per_ps, min(pulse_wavelength_nm)/c_nm_per_ps,
                              len(pulse_wavelength_nm))
-pulseWL = (max(pulse_wavelength_nm) - min (pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
+pulseWL = (max(pulse_wavelength_nm) + min(pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
 rep_rate = 61   # MHz
 EPP = (4e-9)/1  # Energy per pulse (J) + fudge factor
 GDD = 0.0  # Group delay dispersion (ps^2)
@@ -39,10 +39,10 @@ font = {'size': 14}
 plt.rc('font', **font)
 
 # Fiber 1 (OFS PM ND-HNLF)
-Length = 50  # length in mm
+Length = 100  # length in mm
 Alpha = 0.8 * 10 ** (-5)  # attenuation coefficient (dB/cm)
 Gamma = 10.5  # Gamma (1/(W km))
-fibWL = 1550  # Center WL of fiber (nm)
+fibWL = 1565  # Center WL of fiber (nm)
 D = -2.6  # (ps/(nm*km))
 D_slope = .026  # (ps/(nm^2*km))
 if D == 0:
