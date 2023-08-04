@@ -43,7 +43,7 @@ Window = max(pulse_time_ps) - min(pulse_time_ps)  # simulation window (ps)
 Steps = 100  # simulation steps
 Points = len(pulse_amp)  # simulation points
 pad_factor = 2
-pulse_amp = np.pad(pulse_amp, pad_width=, mode=constant, constant_values=0)
+pulse_amp = np.pad(pulse_amp, pad_width=, mode='constant', constant_values=0)
 rtol = 1e-4  # relative error for NLSE integrator
 atol = 1e-4  # absolute error
 

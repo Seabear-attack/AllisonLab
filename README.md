@@ -1,2 +1,2 @@
 # AllisonLab
- Codes for Tom Allison's lab at SBU
+Useful codes for the development table.
