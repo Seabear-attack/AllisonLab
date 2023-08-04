@@ -18,7 +18,7 @@ pulse_amp = pulse_at_file_in[:, 3] + 1j * pulse_at_file_in[:, 4]
 pulse_wavelength_nm = pulse_al_file_in[:, 0]
 pulse_freq_THz = np.linspace(max(pulse_wavelength_nm)/c_nm_per_ps, min(pulse_wavelength_nm)/c_nm_per_ps,
                              len(pulse_wavelength_nm))
-pulseWL = 1565  # pulse central wavelength (nm)
+pulseWL = (max(pulse_wavelength_nm) - min (pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
 rep_rate = 61   # MHz
 EPP = (4e-9)/1  # Energy per pulse (J) + fudge factor
 GDD = 0.0  # Group delay dispersion (ps^2)
@@ -125,47 +125,51 @@ y = y * 1e3  # convert distance to mm
 
 # set up plots for the results:
 fig = plt.figure(figsize=(10, 10))
-ax0 = plt.subplot2grid((4, 1), (0, 0))
-# ax1 = plt.subplot2grid((4, 1), (0, 1))
-ax2 = plt.subplot2grid((4, 1), (1, 0), sharex=ax0)
-# ax3 = plt.subplot2grid((4, 1), (1, 1), sharex=ax1)
-ax4 = plt.subplot2grid((4, 1), (2, 0), rowspan=2, sharex=ax0)
-# ax5 = plt.subplot2grid((4, 1), (2, 1), rowspan=2, sharex=ax1)
+ax0 = plt.subplot2grid((4, 2), (0, 0))
+ax1 = plt.subplot2grid((4, 2), (0, 1))
+ax2 = plt.subplot2grid((4, 2), (1, 0), sharex=ax0)
+# ax2 = plt.subplot2grid((1, 1), (0, 0))
+
+ax3 = plt.subplot2grid((4, 2), (1, 1), sharex=ax1)
+ax4 = plt.subplot2grid((4, 2), (2, 0), rowspan=2, sharex=ax0)
+ax5 = plt.subplot2grid((4, 2), (2, 1), rowspan=2, sharex=ax1)
 
 
 if wavelength_axis:
     ax0.plot(Lambda, zL[-1], color='r')
-    # ax1.plot(pulse.T_ps, zT[-1], color='r')
+    ax1.plot(pulse.T_ps, zT[-1], color='r')
 
     ax0.plot(Lambda, zL[0], color='b')
-    # ax1.plot(pulse.T_ps, zT[0], color='b')
+    ax1.plot(pulse.T_ps, zT[0], color='b')
 
     ax2.plot(Lambda, zL_dB[-1], color='r')
-    # ax3.plot(pulse.T_ps, zT_dB[-1], color='r')
+    ax3.plot(pulse.T_ps, zT_dB[-1], color='r')
 
     ax2.plot(Lambda, zL_dB[0], color='b')
-    # ax3.plot(pulse.T_ps, zT_dB[0], color='b')
+    ax3.plot(pulse.T_ps, zT_dB[0], color='b')
     extent = (1200, 1900, 0, Length)
     ax4.imshow(zL_dB, extent=extent, vmin=np.max(zL_dB) - 60.0,
                vmax=np.max(zL_dB), aspect='auto', origin='lower')
 
     extent = (np.min(pulse.T_ps), np.max(pulse.T_ps), np.min(y), Length)
-    # ax5.imshow(zT_dB, extent=extent, vmin=np.max(zT_dB) - 60.0,
-    #            vmax=np.max(zT_dB), aspect='auto', origin='lower')
+    ax5.imshow(zT_dB, extent=extent, vmin=np.max(zT_dB) - 60.0,
+               vmax=np.max(zT_dB), aspect='auto', origin='lower')
 
     ax0.set_ylabel('Intensity (dB)')
     ax2.set_ylabel('Intensity (arb.)')
 
     ax4.set_xlabel('Wavelength (nm)')
 
-    # ax5.set_xlabel('Time (ps)')
+    ax5.set_xlabel('Time (ps)')
 
     ax4.set_ylabel('Propagation distance (mm)')
 
     ax0.set_xlim(1200, 1900)
-    # ax1.set_xlim(-1, 1)
+    ax2.set_xlim(1200, 1900)
+
+    ax1.set_xlim(-1, 1)
     ax2.set_ylim(-60, 20)
-    # ax3.set_ylim(30, 100)
+    ax3.set_ylim(30, 100)
 else:
     ax0.plot(F_plus, zW[-1], color='r')
     ax1.plot(pulse.T_ps, zT[-1], color='r')
