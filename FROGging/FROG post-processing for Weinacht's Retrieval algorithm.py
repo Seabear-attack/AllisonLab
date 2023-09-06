@@ -15,38 +15,12 @@
 # In[ ]:
 
 
-import pandas as pd
+import os
 import easygui as eg
-import numpy as np
-from numpy import sum, vstack, zeros, array, asarray, linspace, arange, append, intp
-from numba import njit, jit
-# from tqdm import trange
-import easygui as eg
-# import h5py
-import numpy as np
-import matplotlib
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import scatter, ylim, xlim, xlabel, ylabel
-import glob, os
-import statistics
-from statistics import mode
-import pathlib
-import scipy
-from scipy.optimize import curve_fit
-import scipy.stats
-from scipy.stats import expon
-from time import time
+import numpy as np
+import pandas as pd
 import seaborn as sns
-
-# import gaussfitter2
-
-
-# change file directory - run this only once
-currdir = os.getcwd()
-subpath = eg.diropenbox('Open me', 'this one', 'D://Google Drive//')
-print("The data is being read from", subpath)
-os.chdir(subpath)
 
 # In[62]:
 
@@ -59,10 +33,10 @@ os.chdir(subpath)
 
 # change root directory of the python program
 currdir = os.getcwd()
-# subpath = eg.diropenbox('Open me', 'this one', 'C://Users//Lab3//Desktop//Sonali//')
-filepath = eg.fileopenbox('Open me', 'this one', subpath)
-# print("The data is being read from", subpath)
-# os.chdir(subpath)
+filepath = eg.fileopenbox(default=r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\*")
+subpath = os.path.dirname(filepath)
+print("The data is being read from", subpath)
+os.chdir(subpath)
 
 # import data from csv
 FROGRaw = pd.read_csv(filepath, index_col=0, dtype=np.float64)  # read as csv with index being the first column(delay)
@@ -71,7 +45,7 @@ FROGspectrum = FROGRaw.sum(axis=0)  # sum over the horizontal axis to get the wh
 
 # Plot original FROG Trace
 print('data opened from:\t' + filepath)
-sns.heatmap(data=FROGRaw)
+# sns.heatmap(data=FROGRaw)
 
 
 # In[63]:
@@ -92,16 +66,16 @@ lowT = -2200
 highT = 2200
 
 # Plot Spectrum of the origianl FROG data --> to find the correct range to truncate the data
-fig, axe = plt.subplots()
-p = sns.lineplot(FROGspectrum, ax=axe)
-p.set(xlim=(lowWv, highWv))  # change this to zoom in or out on the wavelength axis.
-plt.show()
+# fig, axe = plt.subplots()
+# p = sns.lineplot(FROGspectrum, ax=axe)
+# p.set(xlim=(lowWv, highWv))  # change this to zoom in or out on the wavelength axis.
+# plt.show()
 
 # Plot truncated data
 FROGTrunc = FROGRaw.truncate(before=lowWv, after=highWv, axis="columns")
 FROGTrunc = FROGTrunc.truncate(before=lowT, after=highT, axis="rows")
-FROGspectrumTrunc = FROGTrunc.sum(axis=0)  # truncated spectrum
-sns.heatmap(data=FROGTrunc, cmap="viridis")
+# FROGspectrumTrunc = FROGTrunc.sum(axis=0)  # truncated spectrum
+# sns.heatmap(data=FROGTrunc, cmap="viridis")
 
 # truncated FROG intensity, delayFs, wavelengthnm
 FROGIntensity = FROGTrunc.to_numpy()  # intensity data as 2d numpy array float
