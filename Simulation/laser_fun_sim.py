@@ -21,7 +21,7 @@ pulseWL = (max(pulse_wavelength_nm) + min(pulse_wavelength_nm)) / 2  # pulse cen
 # Fiber 1:
 disp1 = -2.6  # fiber dispersion in ps/(nm km)
 slope1 = .026  # dispersion slope in ps/(nm^2 km)
-length1 = 1  # length of first fiber in meters
+length1 = .01  # length of first fiber in meters
 alpha1 = 0.8 * 10 ** (-5)  # loss (dB/cm)
 gamma1 = 10.5  # nonlinearity (1/(W km))
 
@@ -39,11 +39,11 @@ gamma1 = 10.5  # nonlinearity (1/(W km))
 # TOD = 0.0  # Third order dispersion (ps^3)
 
 # simulation parameters
-Window = max(pulse_time_ps) - min(pulse_time_ps)  # simulation window (ps)
 Steps = 100  # simulation steps
 Points = len(pulse_amp)  # simulation points
 pad_factor = 2
-pulse_amp = np.pad(pulse_amp, pad_width=, mode='constant', constant_values=0)
+pulse_amp = np.pad(pulse_amp, pad_width= (Points * pad_factor, Points * pad_factor), mode='constant', constant_values=0)
+Window = len(pulse_amp) / len(pulse_time_ps) * (max(pulse_time_ps) - min(pulse_time_ps))  # simulation window (ps)
 rtol = 1e-4  # relative error for NLSE integrator
 atol = 1e-4  # absolute error
 
@@ -69,7 +69,7 @@ beta4 = 0.00  # (ps^4/km)
 
 # create the pulse
 pulse_in = lf.Pulse(center_wavelength_nm=pulseWL,
-                    time_window_ps=Window, npts=Points,
+                    time_window_ps=Window, npts=len(pulse_amp),
                     power_is_avg=False, epp=EPP)
 pulse_in.at = pulse_amp
 # create the fiber
@@ -79,7 +79,7 @@ fiber1 = lf.Fiber(length1, center_wl_nm=pulseWL, dispersion_format='GVD',
 
 print('Propagation in fiber1...')
 results1 = lf.NLSE(pulse_in, fiber1, raman=Raman, shock=Steep, nsaves=Steps,
-                   rtol=rtol, atol=atol, print_status=True)
+                   rtol=rtol, atol=atol, print_status=False)
 
 # second fiber
 # fraction = 10 ** (-loss_between_sections_dB * 0.1)
@@ -99,7 +99,7 @@ pulse1 = results1.pulse_out
 
 print('Plotting results...')
 # plot the results
-fig1, axs1 = results1.plot(flim=(1200, 1900), tlim=(-2, 2), wavelength=True, show=False, units = "dBm/nm")
+fig1, axs1 = results1.plot(flim=(1200, 1900), tlim=(-2, 2), wavelength=True, show=False, units = "mW/nm")
 # fig2, axs2 = results2.plot(flim=(188, 200), tlim=(-2, 2), show=False)
 
 # calculate pulse durations

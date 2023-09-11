@@ -1,59 +1,38 @@
-# Plots every spectrum in a user-selected folder. Works for the Anritsu spectrometer.
-import os
-import easygui as eg
+# Plots every spectrum in a user-selected folder. Works for the Yokogawa spectrometer.
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
-
-def OpenCSVFiles(dirName):
-    directory = eg.diropenbox('Open me', 'this one', dirName)
-    filenames = os.listdir(directory)
-    print('changing the root directory to:\t' + directory)
-    print('filenames are:\t', filenames)
-    return directory, filenames
-
+from spectrometer_data import SpectrumData, readFromFiles
+import re
 
 if __name__ == "__main__":
-    directory, filenames = OpenCSVFiles(r'C:\Users\wahlm\Documents\School\Research\Allison')
+    raw_data = readFromFiles(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
+                             r'Control\9-8-23 Spectra by Input Power\Varying pulse energy\Output 1')
+    # labels = ('1111111111111111111',
+    #           '1111111111000000000',
+    #           '1010101010101010101',
+    #           '1111100000000000000',
+    #           '1010010001000010000',
+    #           '0000000000000000000')
+    labels = ('2.65 mW', '1.966 mW', '1.676 mW', '1.054 mW')
+    powers_mW = (2.65, 1.966, 1.676, 1.054)
+    data = [SpectrumData(dat, ('nm', 'dBm'), labels[i], powers_mW[i]) for i, dat in enumerate(raw_data)]
 
-    # loop through all files in the directory
-
-    dfs = []
-    for filename in filenames:
-        # check if file ends with .csv or .txt
-        if filename.endswith('.csv') or filename.endswith('.txt') or filename.endswith('.CSV'):
-            # read the data from the file into a pandas dataframe
-            # print('reading:',os.path.join(directory, filename))
-            df = pd.read_csv(os.path.join(directory, filename))
-            dfs.append(df)
-        if filename.endswith('.xls') or filename.endswith('.xlsx'):
-            df = pd.read_excel(os.path.join(directory, filename), sheet_name=1)
-            dfs.append(df)
-
-    # Create a figure and axis object using matplotlib
     fig, ax = plt.subplots(figsize=(20, 8))
 
-    # Label1 = ['All 1.2A','3*1.2A+800mA','3*1.2A+700mA','3*1.2A+650mA','3*1.2A+500mA']
-    Label1 = ['4x 1A, no modulator', '4x 1.2A, no modulator', '4x 1A, output 1', '4x 1A, output 2']
-
-    for i in range(len(dfs)):
-        df_new = dfs[i].iloc[:, :2]  # select first two column
-        df_new_numeric = df_new.applymap(
-            lambda x: pd.to_numeric(x, errors='coerce')).dropna()  # select only numerical rows
-        # df_new_numeric = df_new_numeric[df_new_numeric.iloc[:,0]>1600]
-        WaveLength = np.array(df_new_numeric.iloc[:, 0].values, dtype='float64')
-        SpectrumIntensity = np.array(df_new_numeric.iloc[:, 1].values, dtype='float64')
-        ax.plot(WaveLength, SpectrumIntensity, label=Label1[i])
-        # ax.semilogy(WaveLength, SpectrumIntensity, label=Label1[i % len(Label1)]+' '+Label2[i//len(Label1)], linestyle = Linestyle[i//len(Label1)],color = LineColor[i%len(Label1)])
-    # Add axis labels and a legend
-    ax.set_xlabel('wavelength (nm)')
-    ax.set_ylabel('power')
+    for datum in data:
+        ax.plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
+    ax.set_xlabel('Wavelength (nm)')
+    ax.set_ylabel(f'Spectral Power ({data[0].y_axis_units})')
     ax.legend()
-    ax.set_title(
-        'Spectrum of +30cm of PM1550 with and without modulator')
+    ax.set_title('Varying Input Pulse Power')
+    plt.show(block=False)
 
-    # plt.ylim(-50,1)
-    # Display the plot
+    fig, ax = plt.subplots(figsize=(20, 8))
+
+    for datum in data:
+        datum.y_axis_units = 'nJ/nm'
+        ax.plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
+    ax.set_xlabel('Wavelength (nm)')
+    ax.set_ylabel(f'Spectral Power ({data[0].y_axis_units})')
+    ax.legend()
+    ax.set_title('Varying Input Pulse Power')
     plt.show()
-

@@ -4,27 +4,30 @@ import easygui as eg
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
-
-def OpenCSVFiles(dirName):
-    directory = eg.diropenbox(default=dirName)
-    filenames = os.listdir(directory)
-    return directory, filenames
-
+from plotting_utils import openDirectory, directory_to_dataframes, get_scope_data, \
+    normalize_by_maximum, offset, get_spectrometer_data
 
 if __name__ == "__main__":
-    home_path = r'C:\Users\wahlm\Documents\School\Research\Allison'
-    directory, filenames = OpenCSVFiles(home_path)
-    # curve_labels = ['4x 1.15A', '4x 1.2A', '4x 1.25A', '4x 1.175A', '4x 1.2A', '4x 1.225A', '4x 1.25A']
-    curve_labels = ['11111111111111111110', '10101010101010101010',
-                    '10000000000000000000', '10100100010000100000',
-                    '11111111110000000000', '10001000100010001000']
-    # curve_powers_mW = [237, 248, 253, 250, 250, 250, 250, 250]
-    # curve_powers_mW = [240, 240, 240, 240, 240, 240, 240]
-    # curve_powers_nJ = [4, 4, 4, 4, 4, 4]
+    dfs = directory_to_dataframes(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
+                                  r'Control\9-8-23 Spectra by Input Power\Varying pulse energy\Output 1', skiprows=44)
 
+    labels = ('1.054 mW',
+              '1.676 mW',
+              '1.966 mW',
+              '2.65 mW')
+    data = get_spectrometer_data(dfs, data_labels=labels)
+
+    # curve_labels = ['4x 1.15A', '4x 1.2A', '4x 1.25A', '4x 1.175A', '4x 1.2A', '4x 1.225A', '4x 1.25A']
+    # curve_labels = ['a', 'b', 'c','d','e','f','g']
+    curve_labels = range(14)
+    # curve_labels = ['4x1A', '3x1 + 1x1.1A', '2x1 + 2x1.1A', '1x1 + 3x1.1A', '4x1.1A']
+    curve_powers_mW = np.array([49, 56, 64, 72, 80, 87, 95, 102, 110, 117, 124, 132, 139, 146])
+    # curve_powers_nJ = [4, 4, 4, 4, 4, 4]
+    frep = 60.5  # MHz
+    frep_eff = frep * np.array(range(14)) / 19
+    curve_powers_nJ = curve_powers_mW / frep_eff
     while directory is not None:
-        title, pulse_energy_nj = eg.multenterbox(fields = ["Title", "Pulse energy (nJ)"])
+        title, pulse_energy_nj = eg.multenterbox(fields=["Title", "Pulse energy (nJ)"])
         pulse_energy_nj = float(pulse_energy_nj)
         # loop through all files in the directory
 
@@ -44,23 +47,26 @@ if __name__ == "__main__":
         spectra = []
         top = 0
         for i in range(len(dfs)):
-            df_new = dfs[i].iloc[:, :2]  # select first two column
-            df_new_numeric = df_new.applymap(
-                lambda x: pd.to_numeric(x, errors='coerce')).dropna()  # select only numerical rows
-            WaveLength = np.array(df_new_numeric.iloc[:, 0].values, dtype='float64')
-            SpectrumIntensity = np.array(df_new_numeric.iloc[:, 1].values, dtype='float64')
-            if SpectrumIntensity[int(len(SpectrumIntensity) / 2)] < 0:
-                SpectrumIntensity = np.power(10, SpectrumIntensity / 10)
-            # Normalize, assume even sample spacing
-            delta_lambda = WaveLength[1] - WaveLength[0]
-            integral = np.sum(SpectrumIntensity)
-            # SpectrumIntensity = SpectrumIntensity / integral * curve_powers_mW[i] / delta_lambda
-            SpectrumIntensity = SpectrumIntensity / integral * pulse_energy_nj / delta_lambda
-            if max(SpectrumIntensity) > top:
-                top = max(SpectrumIntensity)
+            if i > 0:
+                df_new = dfs[i].iloc[:, :2]  # select first two column
+                df_new_numeric = df_new.applymap(
+                    lambda x: pd.to_numeric(x, errors='coerce')).dropna()  # select only numerical rows
+                WaveLength = np.array(df_new_numeric.iloc[:, 0].values, dtype='float64')
+                SpectrumIntensity = np.array(df_new_numeric.iloc[:, 1].values, dtype='float64')
 
-            spectra.append(np.array([WaveLength, SpectrumIntensity]))
-            ax.plot(WaveLength, SpectrumIntensity, label=curve_labels[i])
+                if SpectrumIntensity[int(len(SpectrumIntensity) / 2)] < 0:
+                    SpectrumIntensity = np.power(10, SpectrumIntensity / 10)
+                # Normalize, assume even sample spacing
+                delta_lambda = WaveLength[1] - WaveLength[0]
+                integral = np.sum(SpectrumIntensity)
+                # SpectrumIntensity = SpectrumIntensity / integral * curve_powers_mW[i] / delta_lambda
+                # SpectrumIntensity = SpectrumIntensity / integral * pulse_energy_nj / delta_lambda
+                SpectrumIntensity = SpectrumIntensity / integral * curve_powers_nJ[i] / delta_lambda
+                if max(SpectrumIntensity) > top:
+                    top = max(SpectrumIntensity)
+
+                spectra.append(np.array([WaveLength, SpectrumIntensity]))
+                ax.plot(WaveLength, SpectrumIntensity, label=curve_labels[i])
         # Add axis labels and a legend
         ax.set_xlabel('wavelength (nm)')
         ax.set_ylabel('Spectral Energy per Pulse (nJ/nm)')
@@ -85,4 +91,4 @@ if __name__ == "__main__":
         #                                        'Lower bound [nm]',
         #                                        'Upper bound [nm]',
         #                                        'Total power [mW]'])
-        directory, filenames = OpenCSVFiles(os.path.split(home_path))
+        directory, filenames = openDirectory(os.path.split(home_path))

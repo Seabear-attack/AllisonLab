@@ -1,12 +1,72 @@
 import easygui as eg
 import os
 import numpy as np
+import pandas
+import pandas as pd
+from pathlib import Path
 
 
-def OpenCSVFiles(dirName):
+def openDirectory(dirName):
     directory = eg.diropenbox(default=dirName)
     filenames = os.listdir(directory)
     return directory, filenames
+
+
+def directory_to_dataframes(directory, filenames=None, usecols=None, skiprows=None):
+    if filenames is None:
+        directory_path = Path(directory)
+        filenames = os.listdir(directory_path)
+    file_dfs = []
+    for filename in filenames:
+        if filename.endswith('.csv') or filename.endswith('.txt') or filename.endswith('.CSV'):
+            df = pd.read_csv(os.path.join(directory, filename), header=None, usecols=usecols, skiprows=skiprows)
+            file_dfs.append(df)
+        elif filename.endswith('.xls') or filename.endswith('.xlsx'):
+            df = pd.read_excel(os.path.join(directory, filename), sheet_name=1)
+            file_dfs.append(df)
+    return file_dfs
+
+
+def get_scope_data(dfs, data_labels, axes_labels=('time_s', 'voltage_V')):
+    data = {}
+    for i, df in enumerate(dfs):
+        new_df = df.iloc[:, 3:5]
+        new_df.columns = axes_labels
+        data.update({data_labels[i]: new_df})  # select the data columns
+    return data
+
+
+'''
+Currently works for Yokogawa only. Needs updating for other spectrometer output file formats
+'''
+
+
+def get_spectrometer_data(dfs, data_labels, axes_labels=('wavelength_nm', 'power_mW')):
+    data = {}
+    for i, df in enumerate(dfs):
+        new_df = df.iloc[:, :2]
+        new_df.applymap(
+            lambda x: pd.to_numeric(x, errors='coerce')).dropna()
+        new_df.columns = axes_labels
+        if new_df['power_mW'][0] < 0:
+            new_df['power_mW'] = np.power(10, new_df['power_mW'] / 10)
+        data.update({data_labels[i]: new_df})  # select the data columns
+    return data
+
+
+def normalize_by_maximum(data, column):
+    for df in data.values():
+        df[column] = df[column] / max(df[column])
+
+
+
+
+
+
+
+def offset(data, column, constant_offset):
+    for i, df in enumerate(data.values()):
+        df[column] = df[column] + i * constant_offset
 
 
 def integrate_power(spectrum_intensity, wl_lower_bound,
