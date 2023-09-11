@@ -11,9 +11,10 @@ class SpectrumData:
         self.y_axis_data = data[:, 1]
         self.total_power = spectrum_power_mW
         self.label = data_label
-        self.frep_MHz = frep_MHz
-        self._pulse_energy_nJ = self.total_power / self.frep_MHz
-        self.__normalize()
+        self._frep_MHz = frep_MHz
+        self._pulse_energy_nJ = self.total_power / self._frep_MHz
+
+        self.y_axis_units = axis_units[1]
 
     @property
     def x_axis_units(self):
@@ -30,43 +31,38 @@ class SpectrumData:
 
     @y_axis_units.setter
     def y_axis_units(self, units):
+        if self._y_axis_units[:2] == 'dB':
+            self.y_axis_data = np.power(10, self.y_axis_data / 10)
         self._y_axis_units = units
         self.__normalize()
 
-    @property
-    def data(self):
-        return self.y_axis_data
-
     def __normalize(self):
+        integral = sum(self.y_axis_data)
+        delta_lambda = self.x_axis_data[1] - self.x_axis_data[0]
+
         if self._y_axis_units == 'mW':
-            integral = sum(self.y_axis_data)
             self.y_axis_data = self.y_axis_data * self.total_power / integral
 
         elif self._y_axis_units == 'mW/nm':
-            delta_lambda = self.x_axis_data[1] - self.x_axis_data[0]
-            integral = sum(self.y_axis_data)
             self.y_axis_data = self.y_axis_data * self.total_power / integral / delta_lambda
 
         elif self._y_axis_units == 'dBm':
-            self.y_axis_data = np.power(10, self.y_axis_data / 10)
-            integral = sum(self.y_axis_data)
             self.y_axis_data = 10 * np.log10(self.y_axis_data * self.total_power / integral)
 
         elif self._y_axis_units == 'dBm/nm':
-            delta_lambda = self.x_axis_data[1] - self.x_axis_data[0]
-            self.y_axis_data = np.power(10, self.y_axis_data / 10)
-            integral = sum(self.y_axis_data)
             self.y_axis_data = 10 * np.log10(self.y_axis_data * self.total_power / integral / delta_lambda)
+
         elif self._y_axis_units == 'nJ':
-            self.y_axis_data = np.power(10, self.y_axis_data / 10)
-            integral = sum(self.y_axis_data)
             self.y_axis_data = self.y_axis_data * self._pulse_energy_nJ / integral
 
+        elif self._y_axis_units == 'dBnJ':
+            self.y_axis_data = 10 * np.log10(self.y_axis_data * self._pulse_energy_nJ / integral)
+
         elif self._y_axis_units == 'nJ/nm':
-            delta_lambda = self.x_axis_data[1] - self.x_axis_data[0]
-            self.y_axis_data = np.power(10, self.y_axis_data / 10)
-            integral = sum(self.y_axis_data)
             self.y_axis_data = self.y_axis_data * self._pulse_energy_nJ / integral / delta_lambda
+
+        elif self._y_axis_units == 'dBnJ/nm':
+            self.y_axis_data = 10 * np.log10(self.y_axis_data * self._pulse_energy_nJ / integral / delta_lambda)
 
 
 def readFromFiles(path):
@@ -74,5 +70,5 @@ def readFromFiles(path):
     filenames = listdir(path)
     for filename in filenames:
         data_list.append(np.genfromtxt(join(path, filename), invalid_raise=False, skip_header=40,
-                                       delimiter=', ', comments='"'))
+                                       delimiter=',', comments='"'))
     return data_list
