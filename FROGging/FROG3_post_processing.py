@@ -17,7 +17,6 @@ for filename in filenames:
     filepath = os.path.join(dirpath, filename)
     # import data from csv
     FROGRaw = pd.read_csv(filepath, index_col=0, dtype=np.float64)  # read as csv with index being the first column(delay)
-    # FROGRaw = np.genfromtxt(filepath, dtype=np.float64, delimiter='\t',usemask=True)
 
     FROGRaw.columns = FROGRaw.columns.astype(float)  # the wavelength used to be in string, change it to float!
     FROGspectrum = FROGRaw.sum(axis=0)  # sum over the horizontal axis to get the whole spectrum
