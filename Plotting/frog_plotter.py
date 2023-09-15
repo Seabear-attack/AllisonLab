@@ -10,12 +10,11 @@ if __name__ == "__main__":
     pattern = r'.*cm'
     frogs = frogdata.read_frog_directory(frog_path, pattern=pattern)
 
-    for frog in frogs:
+    for i, frog in enumerate(frogs):
         # # Plot the FROG trace
-        f = plt.figure(figsize=(10, 20))
-        ax1 = f.add_subplot(311)
-        # ax1.imshow(frog.trace, aspect='auto', extent=[min(frog.delays), max(frog.delays), min(frog.wavelengths),
-        #                                               max(frog.wavelengths)])
+        if i % 3 == 0:
+            f = plt.figure(figsize=(10, 20))
+        ax1 = f.add_subplot(3, 3, (3 * i) % 9 + 1)
         ax1.imshow(frog.trace, aspect='auto', extent=[min(frog.delays), max(frog.delays), min(frog.wavelengths),
                                                       max(frog.wavelengths)])
         plt.xlabel('Time Delay [fs]')
@@ -23,14 +22,14 @@ if __name__ == "__main__":
         plt.title(f'{frog.label} FROG Trace, FROG error: {frog.frog_error: 1.3f}')
 
         # Plot the autocorrelation
-        ax2 = f.add_subplot(312, sharex=ax1)
+        ax2 = f.add_subplot(3, 3, (3 * i + 1) % 9 + 1, sharex=ax1)
         ax2.plot(frog.delays, frog.autocorrelation())
         plt.xlabel('Time Delay [fs]')
         plt.ylabel('Intensity')
         plt.title('Autocorrelation')
 
         # Plot the pulse
-        ax3 = f.add_subplot(313, sharex=ax2)
+        ax3 = f.add_subplot(3, 3, (3 * i + 2) % 9 + 1, sharex=ax2)
         ax3.plot(frog.pulse_time, frog.pulse_intensity, label=f'FWHM: {frog.t_FWHM: 1.1f} fs')
         ax3.set_xlim([-1000, 1000])
         plt.xlabel('Time Delay [fs]')
