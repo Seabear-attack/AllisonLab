@@ -16,7 +16,8 @@ show_plots = False
 for filename in filenames:
     filepath = os.path.join(dirpath, filename)
     # import data from csv
-    FROGRaw = pd.read_csv(filepath, index_col=0, dtype=np.float64)  # read as csv with index being the first column(delay)
+    FROGRaw = pd.read_csv(filepath, index_col=0,
+                          dtype=np.float64)  # read as csv with index being the first column(delay)
 
     FROGRaw.columns = FROGRaw.columns.astype(float)  # the wavelength used to be in string, change it to float!
     FROGspectrum = FROGRaw.sum(axis=0)  # sum over the horizontal axis to get the whole spectrum
@@ -57,7 +58,6 @@ for filename in filenames:
     if show_plots:
         plt.show(block=False)
 
-
     # truncated FROG intensity, delayFs, wavelengthnm
     FROGIntensity = FROGTrunc.to_numpy()  # intensity data as 2d numpy array float
     FROGdelayFs = FROGTrunc.index.to_numpy()  # delayFs from index to 1d np float
@@ -68,7 +68,8 @@ for filename in filenames:
     FROGIntensityNmed = FROGIntensity / FROGIntensity.max()  # normalized to 1
 
     # create a new folder that's identical to the filename to save the post processed frog data and
-    dirname = filepath[:-4]  # basename outputs the file name. ex: 4_1.2A 35cm pm1550.csv. basename[:-4] gives 4_1.2A 35cm pm1550
+    dirname = filepath[
+              :-4]  # basename outputs the file name. ex: 4_1.2A 35cm pm1550.csv. basename[:-4] gives 4_1.2A 35cm pm1550
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
@@ -97,8 +98,9 @@ for filename in filenames:
         WvLngthCenter)
 
     # save the array to a text file with the header
-    np.savetxt(os.path.join(dirname, "PostProcessed FROG Trace_with header.csv"), FROGIntensityNmed, delimiter='\t', header=header,
-            comments='')
+    np.savetxt(os.path.join(dirname, "PostProcessed FROG Trace_with header.csv"), FROGIntensityNmed, delimiter='\t',
+               header=header,
+               comments='')
 
     # save the parameters into a info txt file
     info = 'Necessary stuff to add before the data(must be in this order), or to be filled in the software' + '\n' + str(
@@ -107,5 +109,5 @@ for filename in filenames:
         DelayIncre) + '\t\t\t delay increment in fs' + '\n' + str(
         WvLngthIncre) + '\t\t\t wavelength increment in nm' + '\n' + str(
         WvLngthCenter) + '\t\t\t wavelength of the center pixel'
-    np.savetxt(os.path.join(dirname, "PostProcessed FROG parameter.txt"), np.array([]), delimiter='\t', header=info, comments='')
-
+    np.savetxt(os.path.join(dirname, "PostProcessed FROG parameter.txt"), np.array([]), delimiter='\t', header=info,
+               comments='')
