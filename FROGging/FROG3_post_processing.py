@@ -2,14 +2,13 @@
 # Creates a new folder containing files compatible with Frog3.exe retrieval software
 
 import os
-import easygui as eg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
 # dirpath = eg.diropenbox(default=r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump")
-dirpath = r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\9-12-23 Pulse Optimization\Correct Axis\Polarized"
+dirpath = r"C:\Users\JT\Documents\FROGs\9-15-23 Tunable seed pulse optimization"
 filenames = [filename for filename in os.listdir(dirpath) if filename[-4:] == ".csv"]
 show_plots = False
 
@@ -24,8 +23,10 @@ for filename in filenames:
 
     # Plot original FROG Trace
     print('data opened from:\t' + filepath)
-    sns.heatmap(data=FROGRaw)
+
     if show_plots:
+        fig, axe = plt.subplots()
+        sns.heatmap(data=FROGRaw, ax=axe)
         plt.show(block=False)
 
 
@@ -36,26 +37,29 @@ for filename in filenames:
 
 
     # zoom in on wavelength
-    lowWv = 740
-    highWv = 830
+    lowWv = 750
+    highWv = 810
 
     # zoom in on time
-    lowT = -2200
-    highT = 2200
+    lowT = -1000
+    highT = 1000
 
-    # Plot Spectrum of the original FROG data --> to find the correct range to truncate the data
-    fig, axe = plt.subplots()
-    p = sns.lineplot(FROGspectrum, ax=axe)
-    p.set(xlim=(lowWv, highWv))  # change this to zoom in or out on the wavelength axis.
+
     if show_plots:
+        # Plot Spectrum of the original FROG data --> to find the correct range to truncate the data
+        fig, axe = plt.subplots()
+        p = sns.lineplot(data=FROGspectrum, ax=axe)
+        p.set(xlim=(lowWv, highWv))  # change this to zoom in or out on the wavelength axis.
         plt.show(block=False)
 
     # Plot truncated data
     FROGTrunc = FROGRaw.truncate(before=lowWv, after=highWv, axis="columns")
     FROGTrunc = FROGTrunc.truncate(before=lowT, after=highT, axis="rows")
     FROGspectrumTrunc = FROGTrunc.sum(axis=0)  # truncated spectrum
-    sns.heatmap(data=FROGTrunc, cmap="viridis")
+
     if show_plots:
+        fig, axe = plt.subplots()
+        sns.heatmap(data=FROGTrunc, cmap="viridis", ax=axe)
         plt.show(block=False)
 
     # truncated FROG intensity, delayFs, wavelengthnm
@@ -73,9 +77,10 @@ for filename in filenames:
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-    sns.heatmap(data=FROGIntensityNmed)
     if show_plots:
-        plt.show(block=False)
+        fig, axe = plt.subplots()
+        sns.heatmap(data=FROGIntensityNmed, ax=axe)
+        plt.show(block=True)
 
     numDelay = len(FROGdelayFs)
     numWvlngth = len(FROGwaveLengthnm)
