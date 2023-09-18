@@ -38,7 +38,7 @@ for filename in filenames:
 
     # zoom in on wavelength
     lowWv = 750
-    highWv = 810
+    highWv = 820
 
     # zoom in on time
     lowT = -1000
