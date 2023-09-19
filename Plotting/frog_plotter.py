@@ -5,20 +5,25 @@ import re
 
 if __name__ == "__main__":
     # Sample time delay and wavelength arrays
-    frog_path = Path(r'C:\Users\JT\Documents\FROGs\9-15-23 Tunable seed pulse optimization')
-    pattern = r'.*cm_4A'
+    frog_path = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\9-18-23 Tunable seed pulse pattern\43cm_4A')
+    pattern = r'\d{19}'
+    cmap = 'rainbow'
+    save_files = False
     frogs = frogdata.read_frog_directory(frog_path, pattern=pattern)
-
+    frogs = sorted(frogs, key=lambda frog: len(re.findall(r'1', frog.label)))
     for i, frog in enumerate(frogs):
         # # Plot the FROG trace
         if i % 3 == 0:
             f = plt.figure(figsize=(10, 20))
         ax1 = f.add_subplot(3, 3, (3 * i) % 9 + 1)
-        ax1.imshow(frog.trace, aspect='auto', extent=[min(frog.delays), max(frog.delays), min(frog.wavelengths),
-                                                      max(frog.wavelengths)])
+        map = ax1.imshow(frog.trace, aspect='auto', extent=[min(frog.delays), max(frog.delays), min(frog.wavelengths),
+                                                      max(frog.wavelengths)], cmap=cmap)
+        ax1.set_ylim([760, 810])
+        ax1.set_xlim([-1000, 750])
         plt.xlabel('Time Delay [fs]')
         plt.ylabel('Wavelength [nm]')
-        plt.title(f'{frog.label} Measured FROG Trace, FROG error: {frog.frog_error: 1.3f}')
+        plt.title(f'Measured, {frog.label}')
+        plt.colorbar(map)
 
         # Plot the autocorrelation
         # ax2 = f.add_subplot(3, 3, (3 * i + 1) % 9 + 1, sharex=ax1)
@@ -31,10 +36,14 @@ if __name__ == "__main__":
 
         ax2 = f.add_subplot(3, 3, (3 * i + 1) % 9 + 1, sharex=ax1)
         ax2.imshow(frog.trace_recon, aspect='auto', extent=[min(frog.delays), max(frog.delays), min(frog.wavelengths),
-                                                      max(frog.wavelengths)])
+                                                      max(frog.wavelengths)], cmap=cmap)
+
+        ax2.set_ylim([760, 810])
+        ax2.set_xlim([-750, 750])
         plt.xlabel('Time Delay [fs]')
         plt.ylabel('Wavelength [nm]')
-        plt.title(f'{frog.label} Reconstructed FROG Trace')
+        plt.title(f'Reconstructed Trace, Error = {frog.frog_error: .3f}')
+
 
         # Plot the pulse
         ax3 = f.add_subplot(3, 3, (3 * i + 2) % 9 + 1, sharex=ax2)
@@ -45,5 +54,7 @@ if __name__ == "__main__":
         plt.legend()
         f.canvas.manager.window.showMaximized() #toggle fullscreen mode
         plt.tight_layout()
+        if save_files:
+            plt.savefig(frog_path / frog.label, dpi=500)
         plt.show(block=False)
     plt.show()
