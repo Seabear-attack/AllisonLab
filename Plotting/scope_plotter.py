@@ -6,16 +6,17 @@ from Plotting.utils.plotting_utils import directory_to_dataframes, get_scope_dat
 if __name__ == "__main__":
     save_fig = False
     filename = 'frep_over_4_scope_trace'
-    directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
-         r'Control\9-19-23 Pre, Post EDFA Pulses\Tektronix Scope')
+    directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization Control\9-19-23 '
+                         r'Pre, Post EDFA Pulses\post-EDFA\Tektronix Scope')
     dfs = directory_to_dataframes(directorypath)
     labels = ('Background',
-              'f_rep horizontal',
-              'f_rep/2 horizontal',
-              'f_rep/4 horizontal',
+              'f_rep/4 vertical',
               'f_rep vertical',
               'f_rep/2 vertical',
-              'f_rep/4 vertical')
+              'f_rep/2 horizontal',
+              'f_rep horizontal',
+              'f_rep/4 horizontal'
+              )
     data = get_scope_data(dfs, labels)
     normalize_by_maximum(data, 'voltage_V')
     plot_order = [0, 1, 3, 5, 2, 4, 6]
