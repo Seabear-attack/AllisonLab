@@ -1,3 +1,6 @@
+import os
+import re
+from natsort import natsorted
 import numpy as np
 
 
@@ -128,7 +131,8 @@ class OSAData:
 
 def readFromFiles(path, skip_header=40):
     data_list = []
-    filepaths = path.iterdir()
+    files = os.listdir(path)
+    filepaths = natsorted([path / file for file in files], key=str)
     for filepath in filepaths:
         data_list.append(np.genfromtxt(filepath, invalid_raise=False, skip_header=skip_header,
                                        delimiter=',', comments='"'))
