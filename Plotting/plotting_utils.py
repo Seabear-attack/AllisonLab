@@ -4,7 +4,7 @@ import numpy as np
 import pandas
 import pandas as pd
 from pathlib import Path
-from pymodaq.utils.data import
+
 
 def openDirectory(dirName):
     directory = eg.diropenbox(default=dirName)
