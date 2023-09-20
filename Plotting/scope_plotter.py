@@ -1,38 +1,28 @@
 # Plots every scope lineout in user-selected folder. Works for Tektronix scopes
-import os
-import easygui as eg
+from pathlib import Path
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from plotting_utils import openDirectory, directory_to_dataframes, get_scope_data, normalize_by_maximum, offset
+from plotting_utils import directory_to_dataframes, get_scope_data, normalize_by_maximum, offset
 
 if __name__ == "__main__":
-    dfs = directory_to_dataframes(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
-                                  r'Control\9-5-23 RF Ringing\EO Optimization')
-    # labels = ['1111111111111111111',
-    #           '1111111111111111110',
-    #           '1111111111000000000',
-    #           '1010101010101010101',
-    #           '1110111001110001110',
-    #           '1000000000000000000',
-    #           '1000000000100000000',
-    #           '1111000000111100000']
-
-    labels = ['Output 2, 0 pass',
-              'Output 2, 1 pass',
-              'Output 1, 0 pass',
-              'Output 1, 1 pass']
+    dfs = directory_to_dataframes(Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
+                                       r'Control\9-19-23 Pre, Post EDFA Pulses\Tektronix Scope'))
+    labels = ('Background',
+              'f_rep horizontal',
+              'f_rep/2 horizontal',
+              'f_rep/4 horizontal',
+              'f_rep vertical',
+              'f_rep/2 vertical',
+              'f_rep/4 vertical')
     data = get_scope_data(dfs, labels)
     normalize_by_maximum(data, 'voltage_V')
-    offset(data, 'voltage_V', 1)
+    plot_order = [0, 1, 3, 5, 2, 4, 6]
 
     # Create a figure and axis object using matplotlib
     fig, ax = plt.subplots(figsize=(20, 8))
 
-    for label, df in data.items():
-        ax.plot(df['time_s'], df['voltage_V'], label=label)
+    for i, tup in enumerate(sorted(data.items(), key=lambda x: plot_order[labels.index(x[0])])):
+        ax.plot(tup[1]['time_s'], tup[1]['voltage_V'] - i * 1.1, label=tup[0])
     # Add axis labels and a legend
-
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Voltage [V]')
     ax.legend()

@@ -19,10 +19,10 @@ def directory_to_dataframes(directory, filenames=None, usecols=None, skiprows=No
     file_dfs = []
     for filename in filenames:
         if filename.endswith('.csv') or filename.endswith('.txt') or filename.endswith('.CSV'):
-            df = pd.read_csv(os.path.join(directory, filename), header=None, usecols=usecols, skiprows=skiprows)
+            df = pd.read_csv(directory / filename, header=None, usecols=usecols, skiprows=skiprows)
             file_dfs.append(df)
         elif filename.endswith('.xls') or filename.endswith('.xlsx'):
-            df = pd.read_excel(os.path.join(directory, filename), sheet_name=1)
+            df = pd.read_excel(directory / filename, sheet_name=1)
             file_dfs.append(df)
     return file_dfs
 
