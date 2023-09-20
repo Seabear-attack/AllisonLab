@@ -1,6 +1,6 @@
 # Plots every spectrum in a user-selected folder. Works for the Yokogawa spectrometer.
 import matplotlib.pyplot as plt
-from spectrometer_data import SpectrumData, readFromFiles
+from spectrometerdata import SpectrumData, readFromFiles
 import numpy as np
 
 if __name__ == "__main__":
@@ -12,13 +12,7 @@ if __name__ == "__main__":
               '1111100000000000000',
               '1010010001000010000',
               '0000000000000000000')
-    # labels = ('2.65 mW', '1.966 mW', '1.676 mW', '1.054 mW')
-    # powers_mW = [281,
-    #              297,
-    #              301,
-    #              309]
-    #
-    # powers_mW = powers_mW[::-1]
+
 
     powers_mW = 303
 

@@ -1,14 +1,13 @@
 # Plots every scope lineout in user-selected folder. Works for Tektronix scopes
-import os
-import easygui as eg
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from plotting_utils import openDirectory, directory_to_dataframes, get_scope_data, normalize_by_maximum, offset
+from pathlib import Path
+from plottingutils import openDirectory, directory_to_dataframes, get_scope_data, normalize_by_maximum, offset
+
 
 if __name__ == "__main__":
-    dfs = directory_to_dataframes(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
+    dirpath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
                                   r'Control\9-5-23 RF Ringing\EO Optimization')
+    dfs = directory_to_dataframes(dirpath)
     # labels = ['1111111111111111111',
     #           '1111111111111111110',
     #           '1111111111000000000',
@@ -24,7 +23,7 @@ if __name__ == "__main__":
               'Output 1, 1 pass']
     data = get_scope_data(dfs, labels)
     normalize_by_maximum(data, 'voltage_V')
-    offset(data, 'voltage_V', 1)
+    offset(data, 'voltage_V', 1.1)
 
     # Create a figure and axis object using matplotlib
     fig, ax = plt.subplots(figsize=(20, 8))
@@ -39,4 +38,5 @@ if __name__ == "__main__":
     # ax.set_title('Photodiode output')
     ax.set_title('Normalized and Optimized EO Modulator Outputs')
     # Display the plot
+    plt.savefig(dirpath / 'optimized_eo_outputs', dpi=500)
     plt.show()
