@@ -1,6 +1,6 @@
 # Plots every spectrum in a user-selected folder. Works for the Yokogawa spectrometer.
 import matplotlib.pyplot as plt
-from spectrometer_data import OSAData, readFromFiles
+from spectrometerdata import OSAData, readFromFiles
 import numpy as np
 
 if __name__ == "__main__":

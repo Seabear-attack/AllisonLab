@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-import spectrometer_data as sd
+import spectrometerdata as sd
 
 if __name__ == "__main__":
 
