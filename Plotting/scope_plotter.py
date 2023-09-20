@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 from Plotting.utils.plotting_utils import directory_to_dataframes, get_scope_data, normalize_by_maximum
 
 if __name__ == "__main__":
-    dfs = directory_to_dataframes(Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
-                                       r'Control\9-19-23 Pre, Post EDFA Pulses\Tektronix Scope'))
+    save_fig = False
+    filename = 'frep_over_4_scope_trace'
+    directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
+         r'Control\9-19-23 Pre, Post EDFA Pulses\Tektronix Scope')
+    dfs = directory_to_dataframes(directorypath)
     labels = ('Background',
               'f_rep horizontal',
               'f_rep/2 horizontal',
@@ -18,15 +21,18 @@ if __name__ == "__main__":
     plot_order = [0, 1, 3, 5, 2, 4, 6]
 
     # Create a figure and axis object using matplotlib
-    fig, ax = plt.subplots(figsize=(20, 8))
+    fig, ax = plt.subplots(figsize=(12, 8))
 
     for i, tup in enumerate(sorted(data.items(), key=lambda x: plot_order[labels.index(x[0])])):
-        ax.plot(tup[1]['time_s'], tup[1]['voltage_V'] - i * 1.1, label=tup[0])
+        if i > 4:
+            ax.plot(tup[1]['time_s'], tup[1]['voltage_V'] - i * 1.1, label=tup[0])
     # Add axis labels and a legend
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Voltage [V]')
     ax.legend()
     # ax.set_title('Photodiode output')
-    ax.set_title('Normalized and Optimized EO Modulator Outputs')
+    ax.set_title('Photodiode Voltage of Polarized Pulses')
     # Display the plot
+    if save_fig:
+        fig.savefig(directorypath.parent / filename, dpi=300)
     plt.show()
