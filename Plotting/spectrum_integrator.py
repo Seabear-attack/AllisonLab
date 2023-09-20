@@ -19,7 +19,7 @@ if __name__ == "__main__":
     spectrum_powers()
     data = []
     for datum in arrays:
-        data.append(sd.SpectrumData(datum,('nm', 'dBm', labels, )))
+        data.append(sd.OSAData(datum, ('nm', 'dBm', labels,)))
     # loop through all files in the directory
 
     # Create a figure and axis object using matplotlib

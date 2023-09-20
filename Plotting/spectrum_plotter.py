@@ -1,6 +1,6 @@
 # Plots every spectrum in a user-selected folder. Works for the Yokogawa spectrometer.
 import matplotlib.pyplot as plt
-from spectrometer_data import SpectrumData, readFromFiles
+from spectrometer_data import OSAData, readFromFiles
 import numpy as np
 
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     powers_mW = 303
 
     # frep = 60.5 * np.array([1, 10 / 19, 10 / 19, 5 / 19, 5 / 19, 0])
-    data = [SpectrumData(dat, ('nm', 'dBm'), labels[i], powers_mW, frep_MHz=60.5) for i, dat in enumerate(raw_data)]
+    data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW, frep_MHz=60.5) for i, dat in enumerate(raw_data)]
 
     fig, axs = plt.subplots(2, 2)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     #                  '0.749 mW']
     powers_mW = 311
 
-    data = [SpectrumData(dat, ('nm', 'dBm'), labels[i], powers_mW, frep_MHz=60.5) for i, dat in
+    data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW, frep_MHz=60.5) for i, dat in
             enumerate(raw_data)]
 
     for datum in data[:-1]:
