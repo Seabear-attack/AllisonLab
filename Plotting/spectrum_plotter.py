@@ -1,7 +1,6 @@
 # Plots every spectrum in a user-selected folder. Works for the Yokogawa spectrometer.
 import matplotlib.pyplot as plt
-from spectrometerdata import OSAData, readFromFiles
-import numpy as np
+from Plotting.utils.spectrometerdata import OSAData, readFromFiles
 
 if __name__ == "__main__":
     raw_data = readFromFiles(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '

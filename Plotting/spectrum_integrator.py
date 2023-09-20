@@ -1,11 +1,8 @@
 # open one csv file
-import pandas as pd
 import easygui as eg
-import numpy as np
 import matplotlib.pyplot as plt
-import os
 
-import spectrometerdata as sd
+from Plotting.utils import spectrometerdata as sd
 
 if __name__ == "__main__":
 

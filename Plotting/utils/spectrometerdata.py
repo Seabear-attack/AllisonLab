@@ -1,7 +1,6 @@
 import numpy as np
 
 
-
 class RFSAData:
     def __init__(self, data, axis_units, data_label, frep_MHz=60.5):
         self._x_axis_units = axis_units[0]

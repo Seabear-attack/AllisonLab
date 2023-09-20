@@ -1,7 +1,7 @@
 # Plots every scope lineout in user-selected folder. Works for Tektronix scopes
 from pathlib import Path
 import matplotlib.pyplot as plt
-from plotting_utils import directory_to_dataframes, get_scope_data, normalize_by_maximum, offset
+from Plotting.utils.plotting_utils import directory_to_dataframes, get_scope_data, normalize_by_maximum
 
 if __name__ == "__main__":
     dfs = directory_to_dataframes(Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
