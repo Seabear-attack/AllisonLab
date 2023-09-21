@@ -3,25 +3,13 @@ import matplotlib.pyplot as plt
 from Plotting.utils.spectrometerdata import OSAData, readFromFiles
 
 if __name__ == "__main__":
-    raw_data = readFromFiles(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
-                             r'Control\9-8-23 Spectra by Input Power\Varying pulse pattern\Output 1')
-    labels = ('1111111111111111111',
-              '1111111111000000000',
-              '1010101010101010101',
-              '1111100000000000000',
-              '1010010001000010000',
-              '0000000000000000000')
-    # labels = ('2.65 mW', '1.966 mW', '1.676 mW', '1.054 mW')
-    # powers_mW = [281,
-    #              297,
-    #              301,
-    #              309]
-    #
-    # powers_mW = powers_mW[::-1]
+    raw_data = readFromFiles(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and '
+                             r'Spectrum Generation\9-21-23 Tunable seed spectrum optimization\Yokogawa OSA')
+    labels = ('1s',
+              '0s')
+    powers_mW = [281,
+                 2]
 
-    powers_mW = 303
-
-    # frep = 60.5 * np.array([1, 10 / 19, 10 / 19, 5 / 19, 5 / 19, 0])
     data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW, frep_MHz=60.5) for i, dat in enumerate(raw_data)]
 
     fig, axs = plt.subplots(2, 2)

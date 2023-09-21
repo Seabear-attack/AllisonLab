@@ -100,6 +100,19 @@ class OSAData:
         self._y_axis_units = units
         self.__normalize()
 
+    def integral(self, lower_bound=None, upper_bound=None):
+        if lower_bound is None:
+            lower_bound = min(self.x_axis_data)
+        if upper_bound is None:
+            upper_bound = max(self.x_axis_data)
+        in_bounds = np.where(np.logical_and(lower_bound <= self.x_axis_data,    self.x_axis_data <= upper_bound))
+        y_data_subsection = self.y_axis_data[in_bounds]
+        #TODO fix units handling
+        if self.y_axis_units[:2] == 'dB':
+            return sum(np.power(10, y_data_subsection / 10))
+        else:
+            return sum(y_data_subsection)
+
     def __normalize(self):
         integral = sum(self.y_axis_data)
         delta_lambda = self.x_axis_data[1] - self.x_axis_data[0]

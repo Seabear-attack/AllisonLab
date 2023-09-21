@@ -1,49 +1,47 @@
 # open one csv file
-import easygui as eg
 import matplotlib.pyplot as plt
-
-from Plotting.utils import spectrometerdata as sd
+import easygui as eg
+from utils.spectrometerdata import readFromFiles, OSAData
+from pathlib import Path
 
 if __name__ == "__main__":
+    directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and '
+                             r'Spectrum Generation\9-21-23 Tunable seed spectrum optimization\Yokogawa OSA')
+    raw_data = readFromFiles(directorypath)
+    labels = ('1s',
+              '0s')
 
-    arrays = sd.readFromFiles(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization '
-                                  r'Control\9-8-23 Spectra by Input Power\Varying pulse energy\Output 1')
-    labels = ('1.054 mW',
-              '1.676 mW',
-              '1.966 mW',
-              '2.65 mW')
+    powers_mW = (208, 204)
 
-    spectrum_powers()
-    data = []
-    for datum in arrays:
-        data.append(sd.OSAData(datum, ('nm', 'dBm', labels,)))
-    # loop through all files in the directory
+    data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW[i], frep_MHz=60.5) for i, dat in enumerate(raw_data)]
 
     # Create a figure and axis object using matplotlib
     fig, ax = plt.subplots(figsize=(20, 8))
 
-
+    for dat in data:
+        dat.y_axis_units = 'mW'
+        ax.plot(dat.x_axis_data, dat.y_axis_data, label=dat.label)
     # Add axis labels and a legend
-    ax.set_xlabel('wavelength (nm)')
-    ax.set_ylabel('power')
+    ax.set_xlabel(f'Wavelength ({data[0].x_axis_units})')
+    ax.set_ylabel(f'Spectral Power ({data[0].y_axis_units})')
+    # ax.set_ylim([-60, 0])
     ax.legend()
     # ax.set_title()
 
     # Display the plot
+    fig.canvas.manager.window.showMaximized()  # toggle fullscreen mode
     plt.tight_layout()
     plt.show(block=False)
 
     response = eg.multenterbox(fields=['Plot # (0 indexed)',
                                        'Lower bound [nm]',
-                                       'Upper bound [nm]',
-                                       'Total power [mW]'])
+                                       'Upper bound [nm]'])
     while response is not None:
-        spectrum = spectra[int(response[0])]
+        spectrum = data[int(response[0])]
         lower = int(response[1])
         upper = int(response[2])
-        power = int(response[3])
-        integrate_power(spectrum, lower, upper, power)
+        eg.msgbox(f'Power: {spectrum.integral(lower_bound=lower, upper_bound=upper)} mW')
         response = eg.multenterbox(fields=['Plot # (0 indexed)',
                                            'Lower bound [nm]',
-                                           'Upper bound [nm]',
-                                           'Total power [mW]'])
+                                           'Upper bound [nm]'
+                                           ])
