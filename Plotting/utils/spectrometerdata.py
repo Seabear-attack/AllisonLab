@@ -142,10 +142,10 @@ class OSAData:
             self.y_axis_data = 10 * np.log10(self.y_axis_data * self._pulse_energy_nJ / integral / delta_lambda)
 
 
-def readFromFiles(path, skip_header=40):
+def readFromFiles(path, pattern = '*.csv', skip_header=40):
     data_list = []
-    files = os.listdir(path)
-    filepaths = natsorted([path / file for file in files], key=str)
+    files = path.glob(pattern)
+    filepaths = natsorted([file for file in files], key=lambda f: str(f.name))
     for filepath in filepaths:
         data_list.append(np.genfromtxt(filepath, invalid_raise=False, skip_header=skip_header,
                                        delimiter=',', comments='"'))

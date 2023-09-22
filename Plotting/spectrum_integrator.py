@@ -41,7 +41,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(20, 8))
 
     for i, dat in enumerate(data):
-        dat.y_axis_units = 'mW'
+        dat.y_axis_units = 'mW/nm'
         ax.plot(dat.x_axis_data, dat.y_axis_data, label=f'#{i}: {dat.label}')
     # Add axis labels and a legend
     ax.set_xlabel(f'Wavelength ({data[0].x_axis_units})')
