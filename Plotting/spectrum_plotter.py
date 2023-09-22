@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     fig, axs = plt.subplots(2, 2)
 
-    for datum in data:
+    for datum in data[:3]:
         datum.y_axis_units = 'dBnJ/nm'
         axs[0, 0].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[0, 0].set_xlabel('Wavelength (nm)')
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     axs[0, 0].legend()
     axs[0, 0].set_title('ADHNLF Spectra')
 
-    for datum in data:
+    for datum in data[:3]:
         datum.y_axis_units = 'nJ/nm'
         axs[1, 0].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[1, 0].set_xlabel('Wavelength (nm)')
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW[i], frep_MHz=60.5) for i, dat in
             enumerate(raw_data)]
 
-    for datum in data:
+    for datum in data[:1]:
         datum.y_axis_units = 'dBnJ/nm'
         axs[0, 1].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[0, 1].set_xlabel('Wavelength (nm)')
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     axs[0, 1].set_title('NDHNLF Spectra')
     axs[0, 1].legend()
 
-    for datum in data:
+    for datum in data[:1]:
         datum.y_axis_units = 'nJ/nm'
         axs[1, 1].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[1, 1].set_xlabel('Wavelength (nm)')

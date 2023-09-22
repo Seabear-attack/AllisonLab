@@ -6,16 +6,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from pathlib import Path
+from natsort import natsorted
 
 # dirpath = eg.diropenbox(default=r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump")
-dirpath = r"C:\Users\JT\Documents\FROGs\9-15-23 Tunable seed pulse optimization"
-filenames = [filename for filename in os.listdir(dirpath) if filename[-4:] == ".csv"]
-show_plots = False
+dirpath = Path(f'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\9-21-23 Tunable seed spectrum optimization\OAP\ADHNLF')
+filenames = natsorted(dirpath.glob('*.csv'), key=lambda filepath: str(filepath.name))
+show_plots = True
 
 for filename in filenames:
     filepath = os.path.join(dirpath, filename)
     # import data from csv
-    FROGRaw = pd.read_csv(filepath, index_col=0,
+    FROGRaw = pd.read_csv(filepath, header=None,
                           dtype=np.float64)  # read as csv with index being the first column(delay)
 
     FROGRaw.columns = FROGRaw.columns.astype(float)  # the wavelength used to be in string, change it to float!
