@@ -6,32 +6,34 @@ from pathlib import Path
 
 if __name__ == "__main__":
     directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and '
-                         r'Spectrum Generation\9-21-23 Tunable seed spectrum optimization\OAP\ADHNLF')
+                         r'Spectrum Generation\9-21-23 Tunable seed spectrum optimization\OAP\NDHNLF')
     raw_data = readFromFiles(directorypath)
     labels = ('0s, 4A',
               '0s, 3.75A',
               '0s, 3.5A',
               '0s, 3.25A',
               '0s, 3A',
+              '0s, 2.75A',
+              '0s, 2.5A',
               '1s, 4A',
               '1s, 3.75A',
               '1s, 3.5A',
               '1s, 3.25A',
-              '1s, 3A',
-              '1s, 2.75A'
+              '1s, 3A'
               )
 
-    powers_mW = (201,
-                 194,
-                 185,
-                 176,
-                 169,
-                 196,
-                 189,
-                 181,
-                 173,
+    powers_mW = (181,
+                 174,
                  166,
-                 155)
+                 158,
+                 151,
+                 138,
+                 127,
+                 183,
+                 175,
+                 168,
+                 159,
+                 150)
 
     data = [OSAData(dat, ('nm', 'dBm'), labels[i], powers_mW[i], frep_MHz=60.5) for i, dat in enumerate(raw_data)]
 
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     ax.set_ylabel(f'Spectral Power ({data[0].y_axis_units})')
     # ax.set_ylim([-60, 0])
     ax.legend()
-    ax.set_title('ADHNLF Spectra')
+    ax.set_title('NDHNLF Spectra')
     plt.vlines(1300, min(data[0].y_axis_data), max(data[0].y_axis_data), colors='k')
     plt.vlines(1800, min(data[0].y_axis_data), max(data[0].y_axis_data), colors='k')
 
