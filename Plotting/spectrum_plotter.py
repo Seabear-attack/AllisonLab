@@ -36,7 +36,7 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(2, 2)
 
     for datum in data[5::2]:
-        datum.y_axis_units = 'dBnJ/nm'
+        datum.y_axis_units = 'dBm/nm'
         axs[0, 0].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[0, 0].set_xlabel('Wavelength (nm)')
     axs[0, 0].set_ylabel(f'Spectral Power ({data[5].y_axis_units})')
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     axs[0, 0].set_title('ADHNLF OAP Spectra')
 
     for datum in data[5::2]:
-        datum.y_axis_units = 'nJ/nm'
+        datum.y_axis_units = 'mW/nm'
         axs[1, 0].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[1, 0].set_xlabel('Wavelength (nm)')
     axs[1, 0].set_ylabel(f'Spectral Power ({data[5].y_axis_units})')
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             enumerate(raw_data)]
 
     for datum in data[7::2]:
-        datum.y_axis_units = 'dBnJ/nm'
+        datum.y_axis_units = 'dBm/nm'
         axs[0, 1].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[0, 1].set_xlabel('Wavelength (nm)')
     axs[0, 1].set_ylabel(f'Spectral Power ({data[7].y_axis_units})')
@@ -90,15 +90,17 @@ if __name__ == "__main__":
     axs[0, 1].legend()
 
     for datum in data[7::2]:
-        datum.y_axis_units = 'nJ/nm'
+        datum.y_axis_units = 'mW/nm'
         axs[1, 1].plot(datum.x_axis_data, datum.y_axis_data, label=datum.label)
     axs[1, 1].set_xlabel('Wavelength (nm)')
     axs[1, 1].set_ylabel(f'Spectral Power ({data[7].y_axis_units})')
 
     for ax in axs.flatten():
         ax.set_xlim([1000, 2000])
-    axs[0, 0].set_ylim([-45, -5])
-    axs[0, 1].set_ylim([-45, -5])
+    axs[0, 0].set_ylim([-45, 10])
+    axs[0, 1].set_ylim([-45, 10])
+    axs[1, 0].set_ylim([-.05, .5])
+    axs[1, 1].set_ylim([-.05, .5])
     fig.canvas.manager.window.showMaximized()  # toggle fullscreen mode
     plt.tight_layout()
     plt.show()
