@@ -131,7 +131,6 @@ class OSAData:
         else:
             linear_y_data = self.y_axis_data
 
-        # TODO
         if self._y_axis_units == 'mW':
             self.__data_is_log = False
             self.y_axis_data = linear_y_data * self.total_power_mW / integral
