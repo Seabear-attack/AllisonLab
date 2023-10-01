@@ -6,13 +6,16 @@ import re
 if __name__ == "__main__":
     # Sample time delay and wavelength arrays
     frog_path = Path(
-        r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\9-18-23 Tunable seed pulse pattern\43cm_4A')
-    pattern = r'\d{19}'
+        r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\FROGs vs. fiber axis\41.5cm+polarizer+HWP\Normal axis')
+    savepath = frog_path.parent / 'rep_rate_vs_pulse.eps'
+    pattern = r'.*'
     cmap = 'rainbow'
-    save_files = False
+    sort = lambda frog: 0 if re.search(r'\d+', frog.label) is None else int(re.search(r'\d+', frog.label)[0])
+    label = lambda name: r'$f_{rep}$' if re.search(r'\d+', frog.label) is None else r'$f_{rep}/$' + (re.search(r'\d+', name)[0])
+    save_files = True
     frogs = frogdata.read_frog_directory(frog_path, pattern=pattern)
-    frogs = sorted(frogs, key=lambda frog: len(re.findall(r'1', frog.label)))
-    f, ax = plt.subplots(figsize=(12, 8))
+    frogs = sorted(frogs, key=sort)
+    f, ax = plt.subplots(figsize=(6, 8))
     for i, frog in enumerate(frogs):
         # Fix the phase signs to all be the same (pulse maximum on the left of the plot)
         if frog.pulse_time[frog.pulse_intensity == max(frog.pulse_intensity)] > frog.pulse_time[
@@ -24,14 +27,14 @@ if __name__ == "__main__":
                                              frogs[0].pulse_time[frogs[0].pulse_intensity == max(frogs[0].pulse_intensity)])
 
         # Plot the pulse
-        ax.plot(frog.pulse_time, frog.pulse_intensity, label=f'{frog.label}')
-        plt.xlabel('Time Delay [fs]')
-        plt.ylabel('Intensity')
-        plt.title('Reconstructed Pulse')
+        ax.plot(frog.pulse_time, frog.pulse_intensity, label=f'{label(frog.label)}: FWHM={frog.t_FWHM: .1f} fs')
+        plt.xlabel('Time (fs)')
+        plt.ylabel('Intensity (arb.)')
+        plt.title('Reconstructed Pulses')
         plt.legend()
+        plt.xlim([-500, 200])
         f.canvas.manager.window.showMaximized()  # toggle fullscreen mode
         plt.tight_layout()
-        if save_files:
-            plt.savefig(frog_path / frog.label, dpi=500)
-        plt.show(block=False)
+    if save_files:
+        plt.savefig(savepath, dpi=500)
     plt.show()

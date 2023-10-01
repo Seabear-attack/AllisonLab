@@ -5,8 +5,8 @@ import re
 
 if __name__ == "__main__":
     # Sample time delay and wavelength arrays
-    frog_path = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\9-18-23 Tunable seed pulse pattern\43cm_4A')
-    pattern = r'\d{19}'
+    frog_path = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\FROGs vs. fiber axis\41.5cm+polarizer+HWP\Normal axis')
+    pattern = r'.*'
     cmap = 'rainbow'
     save_files = False
     frogs = frogdata.read_frog_directory(frog_path, pattern=pattern)
