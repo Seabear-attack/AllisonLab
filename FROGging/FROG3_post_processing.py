@@ -18,24 +18,31 @@ def readRawFrog(filepath):
 
 
 # shifts the FROG spectrum by -4.893nm because the OSA is not measuring spectrum correctly - tested by the HeNe
-def ShiftFrogby5(OriginalFrog):
-    ShiftedFROG = OriginalFrog - 4.893
-    return ShiftedFROG
+def ShiftFrogWavelength(OriginalFrog, shift):
+    return OriginalFrog.rename(columns=lambda x: x + shift)
+
+
+def ShiftFrogDelay(OriginalFrog, shift):
+    return OriginalFrog.rename(index=lambda x: x + shift)
+
+
+def delayCentroid(frog):
+    return frog.sum(axis=1).idxmax()
 
 
 if __name__ == "__main__":
-    dirpath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Polarization Control\10-4-23 frep over 1000 FROG')
+    dirpath = Path(r'C:\Users\JT\Documents\FROGs\10-4-23 frep over 1000 test')
     filepaths = natsorted(dirpath.glob('*[!background].csv'), key=lambda filepath: str(filepath.name))
     show_plots = False
-    background_filename = list(dirpath.glob('*background.csv'))[0]
-    # background_filename = None
-    background_scalefactor = 999/1000
+    # background_filename = list(dirpath.glob('*background.csv'))[0]
+    background_filename = None
+    # background_scalefactor = 9999/10000
     # zoom in on wavelength
-    lowWv = 750
-    highWv = 820
+    lowWv = 730
+    highWv = 830
     # zoom in on time
-    lowT = -1000
-    highT = 1000
+    lowT = -1200
+    highT = 1200
 
     if background_filename is not None:
         FROGbackground = readRawFrog(dirpath / background_filename)
@@ -74,10 +81,13 @@ if __name__ == "__main__":
             plt.show(block=False)
 
         # truncated FROG intensity, delayFs, wavelengthnm
+
+        FROGTrunc = ShiftFrogWavelength(FROGTrunc, -4.893)
+        timeCenter = delayCentroid(FROGTrunc)
+        FROGTrunc = ShiftFrogDelay(FROGTrunc, -timeCenter)
         FROGIntensity = FROGTrunc.to_numpy()  # intensity data as 2d numpy array float
         FROGdelayFs = FROGTrunc.index.to_numpy()  # delayFs from index to 1d np float
-        FROGwaveLengthnm = FROGTrunc.columns.to_numpy()  # wavelength as FROGTrunc.columns 1d np to float
-        FROGwaveLengthnm = ShiftFrogby5(FROGwaveLengthnm)
+        FROGTrunc = FROGTrunc.columns.to_numpy()  # wavelength as FROGTrunc.columns 1d np to float
 
         # saving files for data processing using Frog3.exe from Weinacht's group
         FROGIntensityNmed = FROGIntensity / FROGIntensity.max()  # normalized to 1
@@ -93,18 +103,18 @@ if __name__ == "__main__":
             plt.show(block=True)
 
         numDelay = len(FROGdelayFs)
-        numWvlngth = len(FROGwaveLengthnm)
+        numWvlngth = len(FROGTrunc)
 
         DelayIncre = FROGdelayFs[1] - FROGdelayFs[0]
-        WvLngthIncre = FROGwaveLengthnm[1] - FROGwaveLengthnm[0]
-        WvLngthCenter = (FROGwaveLengthnm[0] + FROGwaveLengthnm[-1]) / 2
+        WvLngthIncre = FROGTrunc[1] - FROGTrunc[0]
+        WvLngthCenter = (FROGTrunc[0] + FROGTrunc[-1]) / 2
 
         print('Necessary stuff to add before the data(must be in this order), or to be filled in the software')
         print(len(FROGdelayFs), '\t # number of delay points')
-        print(len(FROGwaveLengthnm), '\t # number of wavelength points')
+        print(len(FROGTrunc), '\t # number of wavelength points')
         print(FROGdelayFs[1] - FROGdelayFs[0], '\t #delay increment in fs')
-        print(FROGwaveLengthnm[1] - FROGwaveLengthnm[0], '\t #wavelength increment in nm')
-        print((FROGwaveLengthnm[0] + FROGwaveLengthnm[-1]) / 2, '\t #wavelength of the center pixel')
+        print(FROGTrunc[1] - FROGTrunc[0], '\t #wavelength increment in nm')
+        print((FROGTrunc[0] + FROGTrunc[-1]) / 2, '\t #wavelength of the center pixel')
 
         np.savetxt(dirpath / dirname / "PostProcessed FROG Trace.csv",FROGIntensityNmed, delimiter='\t')
 
