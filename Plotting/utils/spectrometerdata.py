@@ -68,17 +68,28 @@ class RFSAData:
 
 
 class OSAData:
-    def __init__(self, data, axis_units, data_label, spectrum_power_mW, frep_MHz=60.5):
+    def __init__(self, data, axis_units, data_label, spectrum_power_mW, frep_MHz=60.5, is_background=False):
         self._x_axis_units = axis_units[0]
         self._y_axis_units = axis_units[1]
+        self._total_power_mW = spectrum_power_mW
         self.__data_is_log = (self.y_axis_units[:2] == 'dB')
         self.x_axis_data = data[:, 0]
-        self.y_axis_data = data[:, 1]
-        self.total_power_mW = spectrum_power_mW
+        self._y_axis_data = data[:, 1]
         self.label = data_label
-        self._frep_MHz = frep_MHz
-        self._pulse_energy_nJ = self.total_power_mW / self._frep_MHz
+        if not is_background:
+            self._frep_MHz = frep_MHz
+            self._pulse_energy_nJ = self.total_power_mW / self._frep_MHz
         self.__normalize()
+        
+    @property 
+    def total_power_mW(self):
+        return self._total_power_mW
+    
+    @total_power_mW.setter
+    def total_power_mW(self, power):
+        self._total_power_mW = power
+        self.__normalize()
+        
 
     @property
     def x_axis_units(self):
@@ -88,6 +99,7 @@ class OSAData:
     def x_axis_units(self, units):
         if units == 'nm':
             self._x_axis_units = units
+        self.__normalize()
 
     @property
     def y_axis_units(self):
@@ -109,6 +121,7 @@ class OSAData:
         else:
             self._y_axis_data = data
             self._y_axis_data[self._y_axis_data < 0] = 0
+        self.__normalize()
 
     def integral(self, lower_bound=None, upper_bound=None):
         if lower_bound is None:
@@ -126,42 +139,42 @@ class OSAData:
         integral = self.integral()
         delta_lambda = (self.x_axis_data[-1] - self.x_axis_data[0]) / (len(self.x_axis_data) - 1)
         if self.__data_is_log:
-            linear_y_data = np.power(10, self.y_axis_data / 10)
+            linear_y_data = np.power(10, self._y_axis_data / 10)
 
         else:
             linear_y_data = self.y_axis_data
 
         if self._y_axis_units == 'mW':
             self.__data_is_log = False
-            self.y_axis_data = linear_y_data * self.total_power_mW / integral
+            self._y_axis_data = linear_y_data * self.total_power_mW / integral
 
         elif self._y_axis_units == 'mW/nm':
             self.__data_is_log = False
-            self.y_axis_data = linear_y_data * self.total_power_mW / integral / delta_lambda
+            self._y_axis_data = linear_y_data * self.total_power_mW / integral / delta_lambda
 
         elif self._y_axis_units == 'dBm':
             self.__data_is_log = True
-            self.y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral)
 
         elif self._y_axis_units == 'dBm/nm':
             self.__data_is_log = True
-            self.y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral / delta_lambda)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral / delta_lambda)
 
         elif self._y_axis_units == 'nJ':
             self.__data_is_log = False
-            self.y_axis_data = linear_y_data * self._pulse_energy_nJ / integral
+            self._y_axis_data = linear_y_data * self._pulse_energy_nJ / integral
 
         elif self._y_axis_units == 'dBnJ':
             self.__data_is_log = True
-            self.y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral)
 
         elif self._y_axis_units == 'nJ/nm':
             self.__data_is_log = False
-            self.y_axis_data = linear_y_data * self._pulse_energy_nJ / integral / delta_lambda
+            self._y_axis_data = linear_y_data * self._pulse_energy_nJ / integral / delta_lambda
 
         elif self._y_axis_units == 'dBnJ/nm':
             self.__data_is_log = True
-            self.y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral / delta_lambda)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral / delta_lambda)
 
 
 def readFromFiles(path, pattern='*.csv', skip_header=40):
