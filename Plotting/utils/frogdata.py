@@ -50,16 +50,27 @@ def read_frog_directory(directorypath, pattern=None):
     dirpaths = [filepath.parent for filepath in filepaths]
     frog_list = []
     for dirpath in dirpaths:
-        label = re.search(pattern, dirpath.name)
-        if label is not None:
-            label = label[0]
+        if pattern is not None:
+            label = re.search(pattern, dirpath.name)
+            if label is not None:
+                label = label[0]
+                pulse_time, pulse_intensity = read_pulse(dirpath / 'Ek.dat')
+                delays_recon, wavelengths_recon, trace_recon = read_frog(dirpath / 'arecon.dat')
+                delays, wavelengths, trace = read_frog(dirpath / 'a.dat')
+                t_FWHM, wl_FWHM, frog_error = read_recon_parameters(dirpath / 'frog.dat')
+                frog_list.append(
+                    FrogData(delays, wavelengths, trace, delays_recon=delays_recon, wavelengths_recon=wavelengths_recon,
+                            trace_recon=trace_recon, label=label, pulse_time=pulse_time, pulse_intensity=pulse_intensity,
+                            t_FWHM=t_FWHM, wl_FWHM=wl_FWHM, frog_error=frog_error))
+        else:
+            label = dirpath.stem
             pulse_time, pulse_intensity = read_pulse(dirpath / 'Ek.dat')
             delays_recon, wavelengths_recon, trace_recon = read_frog(dirpath / 'arecon.dat')
             delays, wavelengths, trace = read_frog(dirpath / 'a.dat')
             t_FWHM, wl_FWHM, frog_error = read_recon_parameters(dirpath / 'frog.dat')
             frog_list.append(
                 FrogData(delays, wavelengths, trace, delays_recon=delays_recon, wavelengths_recon=wavelengths_recon,
-                         trace_recon=trace_recon, label=label, pulse_time=pulse_time, pulse_intensity=pulse_intensity,
+                        trace_recon=trace_recon, label=label, pulse_time=pulse_time, pulse_intensity=pulse_intensity,
                         t_FWHM=t_FWHM, wl_FWHM=wl_FWHM, frog_error=frog_error))
     return frog_list
 

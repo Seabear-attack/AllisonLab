@@ -6,13 +6,13 @@ import re
 if __name__ == "__main__":
     # Sample time delay and wavelength arrays
     frog_path = Path(
-        r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\FROGs vs. fiber axis\41.5cm+polarizer+HWP\Normal axis')
+        r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\FROGs vs. pulse pattern\Low rep rate')
     savepath = frog_path.parent / 'rep_rate_vs_pulse_norm_axis.eps'
     pattern = r'.*'
     cmap = 'rainbow'
     sort = lambda frog: 0 if re.search(r'\d+', frog.label) is None else int(re.search(r'\d+', frog.label)[0])
     label = lambda name: r'$f_{rep}$' if re.search(r'\d+', frog.label) is None else r'$f_{rep}/$' + (re.search(r'\d+', name)[0])
-    save_files = True
+    save_files = False
     frogs = frogdata.read_frog_directory(frog_path, pattern=pattern)
     frogs = sorted(frogs, key=sort)
     f, ax = plt.subplots(figsize=(6, 8))
