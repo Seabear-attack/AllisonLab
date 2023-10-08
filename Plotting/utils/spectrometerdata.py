@@ -88,6 +88,7 @@ class OSAData:
     @total_power_mW.setter
     def total_power_mW(self, power):
         self._total_power_mW = power
+        self._pulse_energy_nJ = self.total_power_mW / self._frep_MHz
         self.__normalize()
         
 
