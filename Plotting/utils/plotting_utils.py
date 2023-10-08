@@ -37,7 +37,8 @@ def get_scope_data(dfs, data_labels, axes_labels=('time_s', 'voltage_V')):
 
 
 '''
-Currently works for Yokogawa only. Needs updating for other spectrometer output file formats
+Deprecated. Currently works for Yokogawa only. Needs updating for other spectrometer 
+output file formats.
 '''
 
 
@@ -69,6 +70,9 @@ def offset(data, column, constant_offset):
         df[column] = df[column] + i * constant_offset
 
 
+'''
+Deprecated
+'''
 def integrate_power(spectrum_intensity, wl_lower_bound,
                     wl_upper_bound, total_pwr):
     # calculate the dispersive wave ratio to the total power
