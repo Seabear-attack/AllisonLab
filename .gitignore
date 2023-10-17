@@ -152,3 +152,5 @@ cython_debug/
 #.idea/
 /EDFA Control Gui/pyLX/.idea/
 /EDFA Control Gui/pyLX/original codes/.idea/
+.idea/AllisonLab.iml
+.idea/misc.xml
