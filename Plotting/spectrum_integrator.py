@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     for i, dat in enumerate(data):
         dat.y_axis_units = 'mW/nm'
-        ax.plot(dat.x_axis_data, dat.y_axis_data, label=f'#{i}: {dat.label}')
+        ax.plot(dat._x_axis_data, dat.y_axis_data, label=f'#{i}: {dat.label}')
     # Add axis labels and a legend
     ax.set_xlabel(f'Wavelength ({data[0].x_axis_units})')
     ax.set_ylabel(f'Spectral Power ({data[0].y_axis_units})')

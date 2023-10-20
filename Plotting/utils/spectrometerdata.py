@@ -73,24 +73,23 @@ class OSAData:
         self._y_axis_units = axis_units[1]
         self._total_power_mW = spectrum_power_mW
         self.__data_is_log = (self.y_axis_units[:2] == 'dB')
-        self.x_axis_data = data[:, 0]
+        self._x_axis_data = data[:, 0]
         self._y_axis_data = data[:, 1]
         self.label = data_label
         if not is_background:
             self._frep_MHz = frep_MHz
             self._pulse_energy_nJ = self.total_power_mW / self._frep_MHz
         self.__normalize()
-        
-    @property 
+
+    @property
     def total_power_mW(self):
         return self._total_power_mW
-    
+
     @total_power_mW.setter
     def total_power_mW(self, power):
         self._total_power_mW = power
         self._pulse_energy_nJ = self.total_power_mW / self._frep_MHz
         self.__normalize()
-        
 
     @property
     def x_axis_units(self):
@@ -98,9 +97,54 @@ class OSAData:
 
     @x_axis_units.setter
     def x_axis_units(self, units):
-        if units == 'nm':
-            self._x_axis_units = units
-        self.__normalize()
+        # TODO: figure out a way to generate a varying resolution
+        # resolution = None
+        c_nm_ps = 299792.458
+        # if resolution is None:
+            # The conversion from nm -> THz and THz -> nm is identical with this method
+        if (units == 'THz' and self.x_axis_units == 'nm') or (units == 'nm' and self.x_axis_units == 'THz'):
+            old_x_data = self.x_axis_data  # e.g. THz
+            old_y_data = self.y_axis_data
+            new_x_data_lin = np.flip(np.linspace(c_nm_ps / np.min(old_x_data), c_nm_ps / np.max(old_x_data),
+                                                 len(old_x_data)))  # nm
+            new_x_data_hyp = np.flip(c_nm_ps / old_x_data)  # nm
+
+            y_units = self.y_axis_units
+            old_y_data = np.flip(old_y_data)
+            new_y_data = np.interp(new_x_data_lin, new_x_data_hyp, old_y_data)
+            self.y_axis_units = 'mW'
+            self._y_axis_data = new_y_data / np.power(new_x_data_lin, 2)  # 1/lambda^2 Jacobian
+            self._x_axis_data = new_x_data_lin  # nm
+            self.y_axis_units = y_units
+        # else:
+        #     if units == self.x_axis_units:
+        #         old_x_data = self._x_axis_data
+        #         x_range = np.max(old_x_data) - np.min(old_x_data)
+        #         npts = x_range / resolution
+        #         new_x_data = np.linspace(np.min(old_x_data), np.max(old_x_data), npts)
+        #         new_y_data = np.interp(new_x_data, old_x_data, self.y_axis_data)
+        #         self._x_axis_data = new_x_data
+        #         self._y_axis_data = new_y_data
+        #         self.__normalize()
+        #
+        #     elif units == 'THz' and self.x_axis_units == 'nm':
+        #         old_x_data = self._x_axis_data
+        #         old_y_data = self.y_axis_data
+        #         x_range = np.max(old_x_data) - np.min(old_x_data)
+        #         npts = x_range / resolution
+        #         new_x_data_lin = np.flip(np.linspace(c_nm_ps / np.min(old_x_data), c_nm_ps / np.max(old_x_data),
+        #                                              npts))
+        #         new_x_data_hyp = np.flip(c_nm_ps / old_x_data)
+        #
+        #         y_units = self.y_axis_units
+        #         old_y_data = np.flip(old_y_data)
+        #         new_y_data = np.interp(new_x_data_lin, new_x_data_hyp, old_y_data)
+        #         self.y_axis_units = 'mW'
+        #         self._y_axis_data = new_y_data / np.power(new_x_data_lin, 2)  # Jacobian
+        #         self._x_axis_data = new_x_data_lin
+        #         self.y_axis_units = y_units
+
+        self._x_axis_units = units
 
     @property
     def y_axis_units(self):
@@ -110,6 +154,10 @@ class OSAData:
     def y_axis_units(self, units):
         self._y_axis_units = units
         self.__normalize()
+
+    @property
+    def x_axis_data(self):
+        return self._x_axis_data
 
     @property
     def y_axis_data(self):
@@ -126,10 +174,10 @@ class OSAData:
 
     def integral(self, lower_bound=None, upper_bound=None):
         if lower_bound is None:
-            lower_bound = min(self.x_axis_data)
+            lower_bound = min(self._x_axis_data)
         if upper_bound is None:
-            upper_bound = max(self.x_axis_data)
-        in_bounds = np.where(np.logical_and(lower_bound <= self.x_axis_data, self.x_axis_data <= upper_bound))
+            upper_bound = max(self._x_axis_data)
+        in_bounds = np.where(np.logical_and(lower_bound <= self._x_axis_data, self._x_axis_data <= upper_bound))
         y_data_subsection = self.y_axis_data[in_bounds]
         if self.__data_is_log:
             return sum(np.power(10, y_data_subsection / 10))
@@ -138,7 +186,7 @@ class OSAData:
 
     def __normalize(self):
         integral = self.integral()
-        delta_lambda = (self.x_axis_data[-1] - self.x_axis_data[0]) / (len(self.x_axis_data) - 1)
+        delta_x = (self._x_axis_data[-1] - self._x_axis_data[0]) / (len(self._x_axis_data) - 1)
         if self.__data_is_log:
             linear_y_data = np.power(10, self._y_axis_data / 10)
 
@@ -151,7 +199,7 @@ class OSAData:
 
         elif self._y_axis_units == 'mW/nm':
             self.__data_is_log = False
-            self._y_axis_data = linear_y_data * self.total_power_mW / integral / delta_lambda
+            self._y_axis_data = linear_y_data * self.total_power_mW / integral / delta_x
 
         elif self._y_axis_units == 'dBm':
             self.__data_is_log = True
@@ -159,7 +207,7 @@ class OSAData:
 
         elif self._y_axis_units == 'dBm/nm':
             self.__data_is_log = True
-            self._y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral / delta_lambda)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self.total_power_mW / integral / delta_x)
 
         elif self._y_axis_units == 'nJ':
             self.__data_is_log = False
@@ -171,11 +219,11 @@ class OSAData:
 
         elif self._y_axis_units == 'nJ/nm':
             self.__data_is_log = False
-            self._y_axis_data = linear_y_data * self._pulse_energy_nJ / integral / delta_lambda
+            self._y_axis_data = linear_y_data * self._pulse_energy_nJ / integral / delta_x
 
         elif self._y_axis_units == 'dBnJ/nm':
             self.__data_is_log = True
-            self._y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral / delta_lambda)
+            self._y_axis_data = 10 * np.log10(linear_y_data * self._pulse_energy_nJ / integral / delta_x)
 
 
 def readFromFiles(path, pattern='*.csv', skip_header=40):
