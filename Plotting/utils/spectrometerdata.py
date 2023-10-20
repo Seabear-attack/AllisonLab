@@ -3,6 +3,8 @@ import re
 from natsort import natsorted
 import numpy as np
 
+c_nm_ps = 299792.458
+
 
 class RFSAData:
     def __init__(self, data, axis_units, data_label, frep_MHz=60.5):
@@ -97,11 +99,6 @@ class OSAData:
 
     @x_axis_units.setter
     def x_axis_units(self, units):
-        # TODO: figure out a way to generate a varying resolution
-        # resolution = None
-        c_nm_ps = 299792.458
-        # if resolution is None:
-            # The conversion from nm -> THz and THz -> nm is identical with this method
         if (units == 'THz' and self.x_axis_units == 'nm') or (units == 'nm' and self.x_axis_units == 'THz'):
             old_x_data = self.x_axis_data  # e.g. THz
             old_y_data = self.y_axis_data
@@ -116,33 +113,6 @@ class OSAData:
             self._y_axis_data = new_y_data / np.power(new_x_data_lin, 2)  # 1/lambda^2 Jacobian
             self._x_axis_data = new_x_data_lin  # nm
             self.y_axis_units = y_units
-        # else:
-        #     if units == self.x_axis_units:
-        #         old_x_data = self._x_axis_data
-        #         x_range = np.max(old_x_data) - np.min(old_x_data)
-        #         npts = x_range / resolution
-        #         new_x_data = np.linspace(np.min(old_x_data), np.max(old_x_data), npts)
-        #         new_y_data = np.interp(new_x_data, old_x_data, self.y_axis_data)
-        #         self._x_axis_data = new_x_data
-        #         self._y_axis_data = new_y_data
-        #         self.__normalize()
-        #
-        #     elif units == 'THz' and self.x_axis_units == 'nm':
-        #         old_x_data = self._x_axis_data
-        #         old_y_data = self.y_axis_data
-        #         x_range = np.max(old_x_data) - np.min(old_x_data)
-        #         npts = x_range / resolution
-        #         new_x_data_lin = np.flip(np.linspace(c_nm_ps / np.min(old_x_data), c_nm_ps / np.max(old_x_data),
-        #                                              npts))
-        #         new_x_data_hyp = np.flip(c_nm_ps / old_x_data)
-        #
-        #         y_units = self.y_axis_units
-        #         old_y_data = np.flip(old_y_data)
-        #         new_y_data = np.interp(new_x_data_lin, new_x_data_hyp, old_y_data)
-        #         self.y_axis_units = 'mW'
-        #         self._y_axis_data = new_y_data / np.power(new_x_data_lin, 2)  # Jacobian
-        #         self._x_axis_data = new_x_data_lin
-        #         self.y_axis_units = y_units
 
         self._x_axis_units = units
 
@@ -172,6 +142,41 @@ class OSAData:
             self._y_axis_data[self._y_axis_data < 0] = 0
         self.__normalize()
 
+    def set_x_window(self, lower_bound, upper_bound, units, resolution):
+        if units == self.x_axis_units:
+            in_bounds = np.logical_and(self._x_axis_data >= lower_bound, self._x_axis_data <= upper_bound)
+            old_x_data = self._x_axis_data[in_bounds]
+            old_y_data = self.y_axis_data[in_bounds]
+
+            x_range = np.max(old_x_data) - np.min(old_x_data)
+            npts = int(x_range / resolution)
+            new_x_data = np.linspace(np.min(old_x_data), np.max(old_x_data), npts)
+            new_y_data = np.interp(new_x_data, old_x_data, old_y_data)
+            self._x_axis_data = new_x_data
+            self._y_axis_data = new_y_data
+            self.__normalize()
+
+        elif (units == 'THz' and self.x_axis_units == 'nm') or (units == 'nm' and self.x_axis_units == 'THz'):
+            in_bounds = np.logical_and(c_nm_ps / self._x_axis_data >= lower_bound,  c_nm_ps / self._x_axis_data <= upper_bound)
+            old_x_data = self._x_axis_data[in_bounds]
+            old_y_data = self.y_axis_data[in_bounds]
+
+            new_x_data_hyp = np.flip(c_nm_ps / old_x_data)
+            x_range = np.max(new_x_data_hyp) - np.min(new_x_data_hyp)
+            npts = int(x_range / resolution)
+            new_x_data_lin = np.flip(np.linspace(c_nm_ps / np.min(old_x_data), c_nm_ps / np.max(old_x_data),
+                                                 npts))
+
+
+            y_units = self.y_axis_units
+            old_y_data = np.flip(old_y_data)
+            new_y_data = np.interp(new_x_data_lin, new_x_data_hyp, old_y_data)
+            self.y_axis_units = 'mW'
+            self._y_axis_data = new_y_data / np.power(new_x_data_lin, 2)  # Jacobian
+            self._x_axis_data = new_x_data_lin
+            self.y_axis_units = y_units
+
+        self._x_axis_units = units
     def integral(self, lower_bound=None, upper_bound=None):
         if lower_bound is None:
             lower_bound = min(self._x_axis_data)

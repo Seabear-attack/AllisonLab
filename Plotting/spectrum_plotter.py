@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     data = [OSAData(dat, ('nm', 'dBm/nm'), labels[i], powers_mW[i], frep_MHz=60.5) for i, dat in enumerate(raw_data)]
 
-    fig, axs = plt.subplots(2, 1)
+    fig, axs = plt.subplots(2, 1, sharex=True)
 
     for datum in data:
         datum.y_axis_units = 'dBm/nm'
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     directorypath = Path(r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\Spectrum vs. pulse pattern\4cm NDHNLF + 42cm PM1550')
     raw_data = readFromFiles(directorypath)
 
-    labels = (r'4cm NDHNLF 4A$',
+    labels = (r'4cm NDHNLF 4A',
             r'$f_{rep}/10$',
             r'$f_{rep}/100$',
             'background')

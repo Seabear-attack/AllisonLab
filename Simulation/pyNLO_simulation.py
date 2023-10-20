@@ -3,24 +3,60 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pynlo
+from pathlib import Path
+from Plotting.utils.spectrometerdata import OSAData, readFromFiles
+
 
 def dB(num):
     return 10 * np.log10(np.abs(num) ** 2)
 
+
 # Fundamental constants
 c_nm_per_ps = 299792.458
 
+# Comparison Spectrum
+directorypath = Path(
+    r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Pulse Optimization and Spectrum Generation\10-20-23 ADHNLF Spectra\Slow axis')
+raw_data = readFromFiles(directorypath)
+labels = ('7cm LD-ADHNLF 4A',
+          '7cm LD-ADHNLF 3.3A'
+          )
+powers_mW = [200,
+             178]
+adhnlf_data = [OSAData(dat, ('nm', 'dBm/nm'), labels[i], powers_mW[i], frep_MHz=60.5) for i, dat in enumerate(raw_data)]
+
+
+directorypath = Path(
+    r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\Spectrum vs. pulse pattern\4cm NDHNLF + 42cm PM1550')
+raw_data = readFromFiles(directorypath)
+
+labels = (r'4cm NDHNLF 4A',
+          r'$f_{rep}/10$',
+          r'$f_{rep}/100$',
+          'background')
+frep_frac = [1, 1 / 10, 1 / 100, 0]
+is_background = (False, False, False, True)
+powers_mW = [191, 33, 15.37, 13.9]
+
+ndhnlf_data = [OSAData(dat, ('nm', 'dBm/nm'), labels[i], powers_mW[i], frep_MHz=frep_frac[i] * 60.56,
+                is_background=is_background[i]) for i, dat in enumerate(raw_data)]
+ndhnlf_data = ndhnlf_data[:-1]
+
+comparison_spectrum = ndhnlf_data[0]
+
 # Pulse characteristics
-pulse_at_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\1565 +- 3 nm BPF\7-9-23  Pulse duration optimization (1565 BPF)\with_modulator\all_pulses_1.2A_all_+51cm_PM1550_short_EDFA_port\Ek.dat")
-pulse_al_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\1565 +- 3 nm BPF\7-9-23  Pulse duration optimization (1565 BPF)\with_modulator\all_pulses_1.2A_all_+51cm_PM1550_short_EDFA_port\Speck.dat")
+pulse_dir = Path(
+    r'C:\Users\wahlm\Documents\School\Research\Allison\Tunable Pump\Data for Papers\Tunable seed\FROGs vs. pulse pattern\Low rep rate\frep')
+label = r'$f_{rep}'
+pulse_at_file_in = np.genfromtxt(pulse_dir / 'Ek.dat')
+pulse_al_file_in = np.genfromtxt(pulse_dir / 'Speck.dat')
 pulse_time_ps = .001 * pulse_at_file_in[:, 0]
 pulse_amp = pulse_at_file_in[:, 3] + 1j * pulse_at_file_in[:, 4]
 pulse_wavelength_nm = pulse_al_file_in[:, 0]
-pulse_freq_THz = np.linspace(max(pulse_wavelength_nm)/c_nm_per_ps, min(pulse_wavelength_nm)/c_nm_per_ps,
-                             len(pulse_wavelength_nm))
 pulseWL = (max(pulse_wavelength_nm) + min(pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
-rep_rate = 61   # MHz
-EPP = (4e-9)/1  # Energy per pulse (J) + fudge factor
+rep_rate_MHz = 60.56  # MHz
+power_mW = 200
+EPP_J = power_mW / rep_rate_MHz * 1e-9
 GDD = 0.0  # Group delay dispersion (ps^2)
 TOD = 0.0  # Third order dispersion (ps^3)
 
@@ -35,14 +71,14 @@ Steep = True  # Enable self steepening?
 # Plot options
 wavelength_axis = True  # True: wavelength axis, False: frequency axis
 
-font = {'size': 14}
+font = {'size': 10}
 plt.rc('font', **font)
 
 # Fiber 1 (OFS PM ND-HNLF)
-Length = 100  # length in mm
+Length = 40  # length in mm
 Alpha = 0.8 * 10 ** (-5)  # attenuation coefficient (dB/cm)
 Gamma = 10.5  # Gamma (1/(W km))
-fibWL = 1565  # Center WL of fiber (nm)
+fibWL = 1550  # Center WL of fiber (nm)
 D = -2.6  # (ps/(nm*km))
 D_slope = .026  # (ps/(nm^2*km))
 if D == 0:
@@ -77,23 +113,14 @@ fiber1.generate_fiber(Length * 1e-3, center_wl_nm=fibWL, betas=(beta2, beta3, be
 #                       gamma_W_m=Gamma * 1e-3, gvd_units='ps^n/km', gain=-alpha)
 
 
-
 ######## This is where the PyNLO magic happens! ############################
-
-# create the pulse!
-# pulse = pynlo.light.DerivedPulses.SechPulse(1, FWHM/1.76, pulseWL, time_window_ps=Window,
-#                   GDD=GDD, TOD=TOD, NPTS=Points, frep_MHz=100, power_is_avg=False)
-# pulse = pynlo.light.DerivedPulses.GaussianPulse(1, FWHM / 1.76, pulseWL, time_window_ps=Window,
-#                                             GDD=GDD, TOD=TOD, NPTS=Points, frep_MHz=61, power_is_avg=False)
-
 pulse = pynlo.light.PulseBase.Pulse()
 pulse.set_NPTS(len(pulse_time_ps))
 pulse.set_center_wavelength_nm(1565)
 pulse.set_time_window_ps(max(pulse_time_ps) - min(pulse_time_ps))
 pulse.set_AT(pulse_amp)
-# pulse.set_frequency_window_THz(max(pulse_freq_THz) - min(pulse_freq_THz))
-pulse.set_frep_MHz(rep_rate)
-pulse.set_epp(EPP)  # set the pulse energy
+pulse.set_frep_MHz(rep_rate_MHz)
+pulse.set_epp(EPP_J)  # set the pulse energy
 pulse.expand_time_window(pad_factor, "even")
 dict = pulse.get_pulse_dict()
 # Propagation
@@ -106,106 +133,150 @@ y, AW, AT, pulse_out = evol.propagate(pulse_in=pulse, fiber=fiber1, n_steps=Step
 ########## That's it! Physic done. Just boring plots from here! ################
 
 
-F = pulse.W_mks / (2 * np.pi) * 1e-12  # convert to THz
+F_THz = pulse.W_mks / (2 * np.pi) * 1e-12  # convert to THz
 
+F_plus_THz = F_THz[F_THz > 0]
+spectra_by_distance = np.power(np.abs(np.transpose(AW)[:, (F_THz > 0)]), 2)
+spectra_by_distance = [OSAData(np.transpose(np.array([F_plus_THz, spectrum])), ('THz', 'mW'), label, power_mW) for
+                       spectrum in spectra_by_distance]
+pulses_by_distance = np.power(np.abs(np.transpose(AT)), 2)
 
-
-
-F_plus = F[F > 0]
-Lambda = c_nm_per_ps / F_plus
-zW = np.power(np.abs(np.transpose(AW)[:, (F > 0)]), 2)
-zT = np.power(np.abs(np.transpose(AT)), 2)
-zL = zW * np.power(F_plus, 2) / c_nm_per_ps
-
-zW_dB = dB(zW)
-zT_dB = dB(zT)
-zL_dB = dB(zL)
+pulses_by_distance_dB = dB(pulses_by_distance)
 
 y = y * 1e3  # convert distance to mm
 
 # set up plots for the results:
 fig = plt.figure(figsize=(10, 10))
-ax0 = plt.subplot2grid((4, 2), (0, 0))
-ax1 = plt.subplot2grid((4, 2), (0, 1))
-ax2 = plt.subplot2grid((4, 2), (1, 0), sharex=ax0)
-# ax2 = plt.subplot2grid((1, 1), (0, 0))
+ax0 = plt.subplot2grid((4, 3), (0, 0))
+ax1 = plt.subplot2grid((4, 3), (0, 1))
+ax2 = plt.subplot2grid((4, 3), (1, 0), sharex=ax0)
 
-ax3 = plt.subplot2grid((4, 2), (1, 1), sharex=ax1)
-ax4 = plt.subplot2grid((4, 2), (2, 0), rowspan=2, sharex=ax0)
-ax5 = plt.subplot2grid((4, 2), (2, 1), rowspan=2, sharex=ax1)
+ax3 = plt.subplot2grid((4, 3), (1, 1), sharex=ax1)
+ax4 = plt.subplot2grid((4, 3), (2, 0), rowspan=2, sharex=ax0)
+ax5 = plt.subplot2grid((4, 3), (2, 1), rowspan=2, sharex=ax1)
 
+ax6 = plt.subplot2grid((4, 3), (0, 2), rowspan=2)
+ax7 = plt.subplot2grid((4, 3), (2, 2), rowspan=2)
 
 if wavelength_axis:
-    ax0.plot(Lambda, zL[-1], color='r')
-    ax1.plot(pulse.T_ps, zT[-1], color='r')
+    spectrum = spectra_by_distance[-1]
+    spectrum.set_x_window(100, 5000, 'nm', .5)
+    spectrum.y_axis_units = 'nJ/nm'
+    comparison_spectrum.y_axis_units = 'nJ/nm'
+    ax0.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='r', label='Final')
+    ax1.plot(pulse.T_ps, pulses_by_distance[-1], color='r', label='Final')
+    ax6.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='r', label='Simulation')
+    ax6.plot(comparison_spectrum.x_axis_data, comparison_spectrum.y_axis_data,
+             color='b', label='Experiment')
 
-    ax0.plot(Lambda, zL[0], color='b')
-    ax1.plot(pulse.T_ps, zT[0], color='b')
+    spectrum = spectra_by_distance[0]
+    spectrum.set_x_window(100, 5000, 'nm', .5)
+    spectrum.y_axis_units = 'nJ/nm'
+    ax0.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='b', label='Initial')
+    ax1.plot(pulse.T_ps, pulses_by_distance[0], color='b', label='Initial')
 
-    ax2.plot(Lambda, zL_dB[-1], color='r')
-    ax3.plot(pulse.T_ps, zT_dB[-1], color='r')
+    spectrum = spectra_by_distance[-1]
+    spectrum.set_x_window(100, 5000, 'nm', .5)
+    spectrum.y_axis_units = 'dBnJ/nm'
+    comparison_spectrum.y_axis_units = 'dBnJ/nm'
+    ax2.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='r', label='Final')
+    ax3.plot(pulse.T_ps, pulses_by_distance_dB[-1], color='r', label='Final')
+    ax7.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='r', label='Simulation')
+    ax7.plot(comparison_spectrum.x_axis_data, comparison_spectrum.y_axis_data,
+             color='b', label='Experiment')
 
-    ax2.plot(Lambda, zL_dB[0], color='b')
-    ax3.plot(pulse.T_ps, zT_dB[0], color='b')
-    extent = (1200, 1900, 0, Length)
-    ax4.imshow(zL_dB, extent=extent, vmin=np.max(zL_dB) - 60.0,
-               vmax=np.max(zL_dB), aspect='auto', origin='lower')
+    spectrum = spectra_by_distance[0]
+    # spectrum.set_resolution(100, 5000, 'nm', .5)
+    spectrum.y_axis_units = 'dBnJ/nm'
+    ax2.plot(spectrum.x_axis_data, spectrum.y_axis_data, color='b', label='Initial')
+    ax3.plot(pulse.T_ps, pulses_by_distance_dB[0], color='b', label='Initial')
 
-    extent = (np.min(pulse.T_ps), np.max(pulse.T_ps), np.min(y), Length)
-    ax5.imshow(zT_dB, extent=extent, vmin=np.max(zT_dB) - 60.0,
-               vmax=np.max(zT_dB), aspect='auto', origin='lower')
+    spectrum_image_data = []
+    for spectrum in spectra_by_distance:
+        spectrum.set_x_window(100, 5000, 'nm', .5)
+        spectrum.y_axis_units = 'dBnJ/nm'
+        spectrum_image_data.append(spectrum.y_axis_data)
 
-    ax0.set_ylabel('Intensity (dB)')
-    ax2.set_ylabel('Intensity (arb.)')
+    spectrum_image_data = np.array([spectrum.y_axis_data for spectrum in spectra_by_distance])
+    extent = (np.min(spectra_by_distance[0].x_axis_data), np.max(spectra_by_distance[0].x_axis_data), 0, Length)
+    ax4.imshow(spectrum_image_data, extent=extent, vmin=np.max(spectrum_image_data[0]) - 60.0,
+               vmax=np.max(spectrum_image_data[0]), aspect='auto', origin='lower')
+
+    extent = (np.min(pulse.T_ps), np.max(pulse.T_ps), 0, Length)
+    ax5.imshow(pulses_by_distance_dB, extent=extent, vmin=np.max(pulses_by_distance_dB) - 60.0,
+               vmax=np.max(pulses_by_distance_dB), aspect='auto', origin='lower')
+
+    ax0.set_ylabel('Intensity (nJ/nm)')
+    ax6.set_ylabel('Intensity (nJ/nm)')
+
+    ax2.set_ylabel('Intensity (dBnJ/nm)')
+    ax7.set_ylabel('Intensity (dBnJ/nm)')
 
     ax4.set_xlabel('Wavelength (nm)')
+    ax7.set_xlabel('Wavelength (nm)')
+
 
     ax5.set_xlabel('Time (ps)')
 
     ax4.set_ylabel('Propagation distance (mm)')
 
-    ax0.set_xlim(1200, 1900)
-    ax2.set_xlim(1200, 1900)
+    ax0.set_xlim(1000, 2500)
+    ax6.set_xlim(1000, 2500)
+    ax7.set_xlim(1000, 2500)
+    ax0.set_ylim([0, ax0.get_ylim()[1] / 50])
+    ax7.set_ylim([0, ax0.get_ylim()[1] / 50])
 
     ax1.set_xlim(-1, 1)
     ax2.set_ylim(-60, 20)
+    ax7.set_ylim(-60, 20)
+
     ax3.set_ylim(30, 100)
-else:
-    ax0.plot(F_plus, zW[-1], color='r')
-    ax1.plot(pulse.T_ps, zT[-1], color='r')
 
-    ax0.plot(F_plus, zW[0], color='b')
-    ax1.plot(pulse.T_ps, zT[0], color='b')
+    ax0.legend()
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
+    ax6.legend()
+    ax7.legend()
 
-    ax2.plot(F_plus, zW_dB[-1], color='r')
-    ax3.plot(pulse.T_ps, zT_dB[-1], color='r')
+# else:
+#     # TODO Update frequency space sim to reflect changes to wavelength side
+#     ax0.plot(F_plus_THz, spectra_by_distance[-1], color='r')
+#     ax1.plot(pulse.T_ps, pulses_by_distance[-1], color='r')
+#
+#     ax0.plot(F_plus_THz, spectra_by_distance[0], color='b')
+#     ax1.plot(pulse.T_ps, pulses_by_distance[0], color='b')
+#
+#     ax2.plot(F_plus_THz, zW_dB[-1], color='r')
+#     ax3.plot(pulse.T_ps, pulses_by_distance_dB[-1], color='r')
+#
+#     ax2.plot(F_plus_THz, zW_dB[0], color='b')
+#     ax3.plot(pulse.T_ps, pulses_by_distance_dB[0], color='b')
+#
+#     extent = (np.min(F_plus_THz), np.max(F_plus_THz), 0, Length)
+#     ax4.imshow(zW_dB, extent=extent, vmin=np.max(zW_dB) - 60.0,
+#                vmax=np.max(zW_dB), aspect='auto', origin='lower')
+#
+#     extent = (np.min(pulse.T_ps), np.max(pulse.T_ps), 0, Length)
+#     ax5.imshow(pulses_by_distance_dB, extent=extent, vmin=np.max(pulses_by_distance_dB) - 60.0,
+#                vmax=np.max(pulses_by_distance_dB), aspect='auto', origin='lower')
+#
+#     ax0.set_ylabel('Intensity (arb.)')
+#     ax2.set_ylabel('Intensity (dB)')
+#
+#     ax4.set_xlabel('Frequency (THz)')
+#
+#     ax5.set_xlabel('Time (ps)')
+#
+#     ax4.set_ylabel('Propagation distance (mm)')
+#
+#     ax4.set_xlim(0, 400)
+#
+#     ax2.set_ylim(-50, 20)
+#     ax1.set_ylim(-40, 60)
+#     ax1.set_xlim(-1, 1)
 
-    ax2.plot(F_plus, zW_dB[0], color='b')
-    ax3.plot(pulse.T_ps, zT_dB[0], color='b')
-
-    extent = (np.min(F_plus), np.max(F_plus), 0, Length)
-    ax4.imshow(zW_dB, extent=extent, vmin=np.max(zW_dB) - 60.0,
-               vmax=np.max(zW_dB), aspect='auto', origin='lower')
-
-    extent = (np.min(pulse.T_ps), np.max(pulse.T_ps), np.min(y), Length)
-    ax5.imshow(zT_dB, extent=extent, vmin=np.max(zT_dB) - 60.0,
-               vmax=np.max(zT_dB), aspect='auto', origin='lower')
-
-    ax0.set_ylabel('Intensity (arb.)')
-    ax2.set_ylabel('Intensity (dB)')
-
-    ax4.set_xlabel('Frequency (THz)')
-
-    ax5.set_xlabel('Time (ps)')
-
-    ax4.set_ylabel('Propagation distance (mm)')
-
-    ax4.set_xlim(0, 400)
-
-    ax2.set_ylim(-50, 20)
-    ax1.set_ylim(-40, 60)
-    ax0.set_xlim(1200, 1900)
-    ax1.set_xlim(-1, 1)
-
+fig.canvas.manager.window.showMaximized()
+plt.tight_layout(pad=.1)
+# plt.tight_layout()
 plt.show()
-plt.tight_layout(pad=.2)

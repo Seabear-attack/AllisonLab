@@ -1,4 +1,3 @@
-
 import laserfun as lf
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,15 +12,15 @@ pulse_al_file_in = np.genfromtxt(r"C:\Users\wahlm\Documents\School\Research\Alli
 pulse_time_ps = .001 * pulse_at_file_in[:, 0]
 pulse_amp = pulse_at_file_in[:, 3] + 1j * pulse_at_file_in[:, 4]
 pulse_wavelength_nm = pulse_al_file_in[:, 0]
-pulse_avg_power_mW = 300
-pulse_rep_rate_MHz = 61
+pulse_avg_power_mW = 200
+pulse_rep_rate_MHz = 60.56
 EPP = pulse_avg_power_mW / pulse_rep_rate_MHz * 10 ** (-9)
 pulseWL = (max(pulse_wavelength_nm) + min(pulse_wavelength_nm)) / 2  # pulse central wavelength (nm)
 
 # Fiber 1:
 disp1 = -2.6  # fiber dispersion in ps/(nm km)
 slope1 = .026  # dispersion slope in ps/(nm^2 km)
-length1 = .01  # length of first fiber in meters
+length1 = .04  # length of first fiber in meters
 alpha1 = 0.8 * 10 ** (-5)  # loss (dB/cm)
 gamma1 = 10.5  # nonlinearity (1/(W km))
 
